@@ -4,11 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>00981A // ETF HOLDINGS TRACKER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
 <style>
-/* ── Reset ───────────────────────────────────────────────────────────────── */
+/* ── Reset ─────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Variables ───────────────────────────────────────────────────────────── */
+/* ── Variables ─────────────────────────────────────────────────────────── */
 :root {
   --cyan:    #00fff9;
   --magenta: #ff00ff;
@@ -21,37 +24,43 @@
   --border:  rgba(0,255,249,0.18);
   --text:    #b0b8cc;
   --bright:  #dde4f0;
+  --font-num: 'Orbitron', 'Courier New', monospace;
+  --font-ui:  'Courier New', Consolas, monospace;
 }
 
-/* ── Base ────────────────────────────────────────────────────────────────── */
+html { font-size: 16px; }
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Courier New', Consolas, monospace;
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* ── Grid background ─────────────────────────────────────────────────────── */
+/* ── Grid background ───────────────────────────────────────────────────── */
 #grid-bg {
   position: fixed; inset: 0;
   background-image:
-    linear-gradient(rgba(0,255,249,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,255,249,0.025) 1px, transparent 1px);
+    linear-gradient(rgba(0,255,249,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,249,0.022) 1px, transparent 1px);
   background-size: 44px 44px;
   pointer-events: none;
   z-index: 0;
 }
 
-/* ── Scanlines ───────────────────────────────────────────────────────────── */
+/* ── Scanlines ─────────────────────────────────────────────────────────── */
 #scanlines {
   position: fixed; inset: 0;
   background: repeating-linear-gradient(
     0deg,
     transparent,
     transparent 3px,
-    rgba(0,0,0,0.18) 3px,
-    rgba(0,0,0,0.18) 4px
+    rgba(0,0,0,0.15) 3px,
+    rgba(0,0,0,0.15) 4px
   );
   pointer-events: none;
   z-index: 1001;
@@ -62,16 +71,15 @@ body {
   to   { background-position: 0 200px; }
 }
 
-/* Moving beam */
 #beam {
   position: fixed; left: 0; right: 0;
   height: 180px;
   background: linear-gradient(
     to bottom,
     transparent 0%,
-    rgba(0,255,249,0.025) 30%,
-    rgba(0,255,249,0.06) 50%,
-    rgba(0,255,249,0.025) 70%,
+    rgba(0,255,249,0.022) 30%,
+    rgba(0,255,249,0.055) 50%,
+    rgba(0,255,249,0.022) 70%,
     transparent 100%
   );
   pointer-events: none;
@@ -84,21 +92,21 @@ body {
   to   { top: 110vh; }
 }
 
-/* ── Layout ──────────────────────────────────────────────────────────────── */
+/* ── Layout ────────────────────────────────────────────────────────────── */
 .wrap {
-  max-width: 1380px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 20px 24px 40px;
+  padding: 24px 28px 56px;
   position: relative;
   z-index: 2;
 }
 
-/* ── Header ──────────────────────────────────────────────────────────────── */
+/* ── Header ────────────────────────────────────────────────────────────── */
 header {
   text-align: center;
-  padding: 28px 0 24px;
+  padding: 36px 0 30px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 28px;
+  margin-bottom: 36px;
 }
 
 .badge {
@@ -106,20 +114,22 @@ header {
   background: rgba(0,255,249,.08);
   border: 1px solid var(--cyan);
   color: var(--cyan);
-  padding: 3px 14px;
-  font-size: 12px;
+  padding: 4px 18px;
+  font-size: 11px;
   letter-spacing: 4px;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
   text-shadow: 0 0 8px var(--cyan);
   animation: badgepulse 2.4s ease-in-out infinite;
 }
 @keyframes badgepulse {
   0%,100% { box-shadow: 0 0 12px rgba(0,255,249,.2); }
-  50%     { box-shadow: 0 0 24px rgba(0,255,249,.5), 0 0 40px rgba(0,255,249,.15); }
+  50%     { box-shadow: 0 0 28px rgba(0,255,249,.55), 0 0 48px rgba(0,255,249,.15); }
 }
 
 h1 {
-  font-size: clamp(22px, 4.5vw, 46px);
+  font-family: var(--font-num);
+  font-size: clamp(24px, 4.5vw, 50px);
+  font-weight: 900;
   color: var(--cyan);
   text-shadow: 0 0 18px var(--cyan), 0 0 40px rgba(0,255,249,.4);
   letter-spacing: 8px;
@@ -129,9 +139,9 @@ h1 {
 }
 @keyframes flicker {
   0%,95%,100% { opacity: 1; }
-  96%         { opacity: .92; }
+  96%         { opacity: .9; }
   97%         { opacity: 1; }
-  98%         { opacity: .85; }
+  98%         { opacity: .82; }
   99%         { opacity: 1; }
 }
 
@@ -139,12 +149,12 @@ h1 {
   color: var(--magenta);
   font-size: 14px;
   letter-spacing: 5px;
-  margin-top: 8px;
+  margin-top: 10px;
   text-shadow: 0 0 10px var(--magenta);
 }
 
 .sync-line {
-  margin-top: 14px;
+  margin-top: 16px;
   font-size: 13px;
   color: var(--text);
   opacity: .65;
@@ -166,22 +176,82 @@ h1 {
   animation: livepulse 1.6s ease-in-out infinite;
 }
 @keyframes livepulse {
-  0%,100% { opacity:1; box-shadow: 0 0 6px var(--green); }
-  50%     { opacity:.3; box-shadow: 0 0 14px var(--green); }
+  0%,100% { opacity:1;  box-shadow: 0 0 6px var(--green); }
+  50%     { opacity:.3; box-shadow: 0 0 16px var(--green); }
 }
 
-/* ── Metrics ─────────────────────────────────────────────────────────────── */
+/* ── Date Navigator ────────────────────────────────────────────────────── */
+.date-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+
+.date-btn {
+  background: rgba(0,255,249,.07);
+  border: 1px solid var(--border);
+  color: var(--cyan);
+  font-family: var(--font-ui);
+  font-size: 18px;
+  width: 36px; height: 36px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s, box-shadow .2s;
+  line-height: 1;
+}
+.date-btn:hover {
+  background: rgba(0,255,249,.16);
+  box-shadow: 0 0 14px rgba(0,255,249,.3);
+}
+.date-btn:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+#date-input {
+  background: rgba(0,255,249,.06);
+  border: 1px solid var(--border);
+  color: var(--bright);
+  font-family: var(--font-num);
+  font-size: 14px;
+  padding: 6px 12px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none;
+  color-scheme: dark;
+}
+#date-input::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(3) hue-rotate(160deg);
+  cursor: pointer;
+}
+#date-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 14px rgba(0,255,249,.25);
+}
+
+.date-label {
+  font-size: 12px;
+  color: var(--text);
+  opacity: .55;
+  letter-spacing: 2px;
+}
+
+/* ── Metrics ───────────────────────────────────────────────────────────── */
 .metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 14px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 40px;
 }
 
 .metric-card {
   background: var(--bg2);
   border: 1px solid var(--border);
-  padding: 18px 20px;
+  padding: 22px 22px 18px;
   position: relative;
   overflow: hidden;
   transition: border-color .25s, box-shadow .25s;
@@ -197,7 +267,7 @@ h1 {
 }
 .metric-card:hover {
   border-color: rgba(0,255,249,.5);
-  box-shadow: 0 0 24px rgba(0,255,249,.12), inset 0 0 24px rgba(0,255,249,.03);
+  box-shadow: 0 0 28px rgba(0,255,249,.12), inset 0 0 28px rgba(0,255,249,.03);
 }
 .metric-card::after {
   content: '';
@@ -214,35 +284,36 @@ h1 {
   color: var(--cyan);
   text-transform: uppercase;
   opacity: .75;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .metric-value {
-  font-size: 26px;
-  font-weight: bold;
+  font-family: var(--font-num);
+  font-size: 28px;
+  font-weight: 700;
   color: var(--bright);
   line-height: 1;
 }
-.metric-value.pos { color: var(--green); text-shadow: 0 0 10px var(--green); }
-.metric-value.neg { color: var(--red);   text-shadow: 0 0 10px var(--red);   }
+.metric-value.pos { color: var(--green); text-shadow: 0 0 12px var(--green); }
+.metric-value.neg { color: var(--red);   text-shadow: 0 0 12px var(--red);   }
 .metric-value.sm  { font-size: 18px; }
 
 .metric-sub {
   font-size: 12px;
   color: var(--text);
-  margin-top: 5px;
-  opacity: .55;
+  margin-top: 7px;
+  opacity: .5;
 }
 
-/* ── Section ─────────────────────────────────────────────────────────────── */
-.section { margin-bottom: 32px; }
+/* ── Section ───────────────────────────────────────────────────────────── */
+.section { margin-bottom: 40px; }
 
 .section-hd {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 18px;
-  padding-bottom: 10px;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -266,44 +337,129 @@ h1 {
   color: var(--text);
   opacity: .5;
   border: 1px solid var(--border);
-  padding: 2px 8px;
+  padding: 2px 10px;
   white-space: nowrap;
 }
 
-/* ── Holdings ────────────────────────────────────────────────────────────── */
-.holdings-list { display: flex; flex-direction: column; gap: 6px; }
+/* ── Sort toolbar ──────────────────────────────────────────────────────── */
+.sort-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  align-items: center;
+}
+
+.sort-label {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text);
+  opacity: .45;
+  margin-right: 2px;
+}
+
+.sort-btn {
+  background: rgba(0,255,249,.05);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  letter-spacing: 1px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all .18s;
+  display: flex; align-items: center; gap: 5px;
+}
+.sort-btn:hover {
+  border-color: rgba(0,255,249,.4);
+  color: var(--bright);
+  background: rgba(0,255,249,.1);
+}
+.sort-btn.active {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  background: rgba(0,255,249,.1);
+  text-shadow: 0 0 8px var(--cyan);
+}
+
+.sort-arrow { font-size: 10px; opacity: .8; }
+
+/* ── Holdings ──────────────────────────────────────────────────────────── */
+.holdings-list { display: flex; flex-direction: column; gap: 8px; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
 
 .holding-row {
   display: grid;
-  grid-template-columns: 44px 160px 1fr 72px 68px;
+  grid-template-columns: 48px 200px 1fr 90px 90px 100px;
   align-items: center;
-  gap: 10px;
-  padding: 7px 12px;
+  gap: 12px;
+  padding: 10px 16px;
+  min-height: 52px;
   background: rgba(0,255,249,.018);
   border: 1px solid transparent;
   transition: border-color .2s, background .2s;
   position: relative;
+  cursor: default;
+  animation: fadeSlideIn 0.4s ease both;
+  animation-delay: calc(var(--row-i, 0) * 0.04s);
 }
 .holding-row:hover {
   border-color: rgba(0,255,249,.3);
-  background: rgba(0,255,249,.045);
+  background: rgba(0,255,249,.04);
 }
 
 .holding-rank {
-  font-size: 12px; color: var(--text); opacity: .4; text-align: right;
+  font-family: var(--font-num);
+  font-size: 12px;
+  color: var(--text);
+  opacity: .4;
+  text-align: right;
 }
 
-.holding-code { font-size: 12px; color: var(--cyan); letter-spacing: 1px; opacity: .85; }
-.holding-name { font-size: 15px; color: var(--bright); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.holding-info { min-width: 0; }
+.holding-code {
+  font-size: 11px;
+  color: var(--cyan);
+  letter-spacing: 1px;
+  opacity: .85;
+  line-height: 1.2;
+}
+.holding-name {
+  font-size: 15px;
+  color: var(--bright);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color .15s, text-shadow .15s;
+}
+.holding-name:hover {
+  color: var(--cyan);
+  text-shadow: 0 0 10px rgba(0,255,249,.6);
+}
 
-.bar-wrap { position: relative; height: 24px; display: flex; align-items: center; overflow: hidden; }
+/* Bar */
+.bar-wrap {
+  position: relative;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  gap: 8px;
+}
 
 .bar {
   height: 18px;
   background: linear-gradient(to right, rgba(0,255,249,.65), rgba(0,255,249,.28));
   border-right: 2px solid var(--cyan);
-  box-shadow: 0 0 10px rgba(0,255,249,.45), inset 0 0 8px rgba(0,255,249,.12);
+  box-shadow: 0 0 10px rgba(0,255,249,.4), inset 0 0 8px rgba(0,255,249,.1);
+  min-width: 2px;
   width: 0;
+  flex-shrink: 0;
   transition: width 1.1s cubic-bezier(.25,.46,.45,.94);
   position: relative;
 }
@@ -315,86 +471,144 @@ h1 {
   background: var(--cyan);
   box-shadow: 0 0 14px var(--cyan);
 }
-
-.h-weight {
-  font-size: 14px; font-weight: bold;
-  color: var(--cyan); text-shadow: 0 0 8px rgba(0,255,249,.5);
-  text-align: right;
+.bar.heavy {
+  background: linear-gradient(to right, rgba(0,255,249,.9), rgba(0,255,249,.55));
+  border-right-color: #fff;
+  box-shadow:
+    0 0 20px rgba(0,255,249,.75),
+    0 0 44px rgba(0,255,249,.32),
+    inset 0 0 14px rgba(0,255,249,.22);
+}
+.bar.heavy::after {
+  background: #fff;
+  box-shadow: 0 0 18px var(--cyan), 0 0 32px rgba(0,255,249,.5);
 }
 
-.h-change { font-size: 13px; text-align: right; }
+.bar-label {
+  font-family: var(--font-num);
+  font-size: 13px;
+  color: var(--cyan);
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(0,255,249,.5);
+  min-width: 46px;
+}
+
+/* Weight column (mobile fallback) */
+.h-weight {
+  font-family: var(--font-num);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--cyan);
+  text-shadow: 0 0 8px rgba(0,255,249,.5);
+  text-align: right;
+  display: none;
+}
+
+/* Change */
+.h-change {
+  font-family: var(--font-num);
+  font-size: 13px;
+  text-align: right;
+}
 .h-change.up   { color: var(--green); text-shadow: 0 0 6px var(--green); }
 .h-change.down { color: var(--red);   text-shadow: 0 0 6px var(--red);   }
-.h-change.flat { color: var(--text);  opacity: .35; }
+.h-change.flat { color: var(--text);  opacity: .3; }
 
-/* ── Changes grid ────────────────────────────────────────────────────────── */
+/* Tag column */
+.h-tag { text-align: right; }
+
+/* ── Tags ──────────────────────────────────────────────────────────────── */
+.tag {
+  display: inline-block;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.tag-added     { color: var(--green);   border-color: var(--green);   background: rgba(0,255,65,.08);   }
+.tag-removed   { color: var(--red);     border-color: var(--red);     background: rgba(255,49,49,.08);  }
+.tag-increased { color: var(--cyan);    border-color: var(--cyan);    background: rgba(0,255,249,.08);  }
+.tag-decreased { color: var(--orange);  border-color: var(--orange);  background: rgba(255,140,0,.08);  }
+
+/* ── Changes grid ──────────────────────────────────────────────────────── */
 .changes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 16px;
 }
 
 .change-panel {
   background: var(--bg2);
   border: 1px solid var(--border);
-  padding: 14px 16px;
+  padding: 16px 18px;
 }
 
 .change-panel-title {
   font-size: 12px;
   letter-spacing: 3px;
   text-transform: uppercase;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.change-panel-title.added     { color: var(--green);   text-shadow: 0 0 8px var(--green);   }
-.change-panel-title.removed   { color: var(--red);     text-shadow: 0 0 8px var(--red);     }
-.change-panel-title.increased { color: var(--cyan);    text-shadow: 0 0 8px var(--cyan);    }
-.change-panel-title.decreased { color: var(--orange);  text-shadow: 0 0 8px var(--orange);  }
+.change-panel-title.added     { color: var(--green);  text-shadow: 0 0 8px var(--green);  }
+.change-panel-title.removed   { color: var(--red);    text-shadow: 0 0 8px var(--red);    }
+.change-panel-title.increased { color: var(--cyan);   text-shadow: 0 0 8px var(--cyan);   }
+.change-panel-title.decreased { color: var(--orange); text-shadow: 0 0 8px var(--orange); }
 
 .change-badge {
-  display: inline-block; padding: 1px 6px;
-  border: 1px currentColor solid; font-size: 11px;
+  display: inline-block;
+  padding: 1px 7px;
+  border: 1px currentColor solid;
+  font-size: 11px;
 }
 
-.change-count { margin-left: auto; opacity: .5; }
+.change-count { margin-left: auto; opacity: .45; }
 
 .change-item {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(255,255,255,.045);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
   font-size: 14px;
+  gap: 10px;
 }
 .change-item:last-child { border-bottom: none; }
-.change-code { color: var(--text); opacity: .45; font-size: 11px; margin-right: 4px; }
+.change-code { color: var(--text); opacity: .45; font-size: 11px; margin-right: 5px; }
 .change-name { color: var(--bright); }
-.change-val  { font-weight: bold; }
+.change-val  { font-family: var(--font-num); font-size: 13px; font-weight: 600; white-space: nowrap; }
 .change-val.up   { color: var(--green); }
 .change-val.down { color: var(--red);   }
 
-.empty { color: var(--text); opacity: .3; font-size: 12px; text-align: center; padding: 18px 0; letter-spacing: 2px; }
+.empty { color: var(--text); opacity: .3; font-size: 12px; text-align: center; padding: 20px 0; letter-spacing: 2px; }
 
-/* ── Sector ──────────────────────────────────────────────────────────────── */
+/* ── Sector ────────────────────────────────────────────────────────────── */
 .sector-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .sector-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px;
-  background: rgba(255,0,255,.025);
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,0,255,.022);
   border: 1px solid rgba(255,0,255,.14);
 }
 
-.sector-name { font-size: 14px; color: var(--bright); white-space: nowrap; min-width: 54px; }
+.sector-name {
+  font-size: 14px;
+  color: var(--bright);
+  white-space: nowrap;
+  min-width: 54px;
+}
 
-.sector-track { flex: 1; height: 4px; background: rgba(255,0,255,.15); overflow: hidden; }
+.sector-track { flex: 1; height: 5px; background: rgba(255,0,255,.15); overflow: hidden; }
 .sector-fill  {
   height: 100%; background: var(--magenta);
   box-shadow: 0 0 8px var(--magenta);
@@ -403,42 +617,164 @@ h1 {
 }
 
 .sector-pct {
-  font-size: 14px; color: var(--magenta);
-  text-shadow: 0 0 6px var(--magenta); min-width: 44px; text-align: right;
+  font-family: var(--font-num);
+  font-size: 14px;
+  color: var(--magenta);
+  text-shadow: 0 0 6px var(--magenta);
+  min-width: 46px;
+  text-align: right;
 }
 
-/* ── Footer ──────────────────────────────────────────────────────────────── */
+/* ── Modal ─────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(4,4,15,0.88);
+  backdrop-filter: blur(5px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-box {
+  background: #07071a;
+  border: 1px solid var(--cyan);
+  box-shadow: 0 0 60px rgba(0,255,249,.25), 0 0 120px rgba(0,255,249,.08);
+  padding: 32px 36px 28px;
+  min-width: 320px;
+  max-width: 460px;
+  width: 90%;
+  position: relative;
+  transform: translateY(10px);
+  transition: transform .2s;
+}
+.modal-overlay.open .modal-box { transform: translateY(0); }
+
+.modal-close {
+  position: absolute;
+  top: 14px; right: 18px;
+  background: none; border: none;
+  color: var(--text); font-size: 20px;
+  cursor: pointer; opacity: .5;
+  transition: opacity .15s, color .15s;
+  line-height: 1;
+}
+.modal-close:hover { opacity: 1; color: var(--cyan); }
+
+.modal-title {
+  font-family: var(--font-num);
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  opacity: .6;
+  margin-bottom: 6px;
+}
+
+.modal-name {
+  font-size: 22px;
+  color: var(--bright);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.modal-code {
+  font-family: var(--font-num);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--cyan);
+  text-shadow: 0 0 16px var(--cyan);
+  letter-spacing: 3px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.modal-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.modal-stat {
+  background: rgba(0,255,249,.04);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+}
+.modal-stat-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--cyan);
+  opacity: .6;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.modal-stat-value {
+  font-family: var(--font-num);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--bright);
+}
+.modal-stat-value.pos { color: var(--green); text-shadow: 0 0 10px var(--green); }
+.modal-stat-value.neg { color: var(--red);   text-shadow: 0 0 10px var(--red);   }
+
+.modal-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text);
+  opacity: .45;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
 footer {
-  margin-top: 36px; padding: 18px 0;
+  margin-top: 48px; padding: 20px 0;
   border-top: 1px solid var(--border);
   text-align: center;
-  font-size: 9px; color: var(--text); opacity: .35; letter-spacing: 2px;
+  font-size: 11px; color: var(--text); opacity: .3; letter-spacing: 2px;
 }
 
-/* ── Loading / Error ─────────────────────────────────────────────────────── */
+/* ── Loading / Error ───────────────────────────────────────────────────── */
 .loading {
   display: flex; align-items: center; justify-content: center;
-  min-height: 160px; color: var(--cyan); font-size: 14px;
+  min-height: 180px; color: var(--cyan); font-size: 14px;
   letter-spacing: 4px; text-shadow: 0 0 10px var(--cyan);
   animation: blink 1s step-end infinite; grid-column: 1/-1;
 }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.12} }
 
 .error-msg {
-  grid-column: 1/-1; text-align: center; padding: 30px;
+  grid-column: 1/-1; text-align: center; padding: 32px;
   color: var(--red); text-shadow: 0 0 10px var(--red);
   font-size: 15px; letter-spacing: 3px;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 780px) {
-  .holding-row { grid-template-columns: 36px 1fr 64px 56px; }
-  .bar-wrap    { display: none; }
-  h1           { letter-spacing: 4px; }
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .holding-row { grid-template-columns: 40px 1fr 80px 80px; }
+  .bar-col     { display: none; }
+  .h-weight    { display: block; }
+  .sort-btn[data-sort="weight"] .sort-arrow { display: inline; }
 }
-@media (max-width: 480px) {
-  .holding-row { grid-template-columns: 28px 1fr 60px; }
+@media (max-width: 560px) {
+  .holding-row { grid-template-columns: 32px 1fr 74px 72px; }
+  h1 { letter-spacing: 4px; }
+  .modal-stats { grid-template-columns: 1fr; }
+}
+@media (max-width: 420px) {
+  .holding-row { grid-template-columns: 28px 1fr 70px; }
   .h-change    { display: none; }
+  .wrap { padding: 16px 14px 40px; }
 }
 </style>
 </head>
@@ -447,6 +783,33 @@ footer {
 <div id="grid-bg"></div>
 <div id="scanlines"></div>
 <div id="beam"></div>
+
+<!-- ── Modal ── -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="modal-close" id="modal-close" aria-label="關閉">✕</button>
+    <div class="modal-title">STOCK // 股票資訊</div>
+    <div class="modal-name" id="modal-name">——</div>
+    <div class="modal-code" id="modal-code">
+      <span id="modal-code-num">——</span>
+      <span id="modal-tag"></span>
+    </div>
+    <div class="modal-stats">
+      <div class="modal-stat">
+        <div class="modal-stat-label">WEIGHT // 持股比例</div>
+        <div class="modal-stat-value" id="modal-weight">——</div>
+      </div>
+      <div class="modal-stat">
+        <div class="modal-stat-label">CHANGE // 比例變化</div>
+        <div class="modal-stat-value" id="modal-change">——</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span id="modal-sector">——</span>
+      <span id="modal-rank">——</span>
+    </div>
+  </div>
+</div>
 
 <div class="wrap">
 
@@ -460,6 +823,13 @@ footer {
       &ensp;·&ensp; LAST SYNC: <span id="sync-time">——</span>
       &ensp;·&ensp; DATE: <span id="data-date">——</span>
     </div>
+    <div class="date-nav">
+      <span class="date-label">DATA &nbsp;</span>
+      <button class="date-btn" id="btn-prev" title="前一天">‹</button>
+      <input type="date" id="date-input" title="選擇日期">
+      <button class="date-btn" id="btn-next" title="後一天">›</button>
+      <span class="date-label">&nbsp; DATE</span>
+    </div>
   </header>
 
   <!-- ── Metrics ── -->
@@ -469,12 +839,19 @@ footer {
     </div>
   </div>
 
-  <!-- ── Top Holdings ── -->
+  <!-- ── Holdings ── -->
   <div class="section">
     <div class="section-hd">
       <div class="section-title">HOLDINGS MATRIX // 持股明細</div>
       <div class="section-rule"></div>
       <div class="section-tag" id="holdings-tag">──</div>
+    </div>
+    <div class="sort-bar">
+      <span class="sort-label">SORT:</span>
+      <button class="sort-btn active" data-sort="weight">比例 <span class="sort-arrow">↓</span></button>
+      <button class="sort-btn" data-sort="change">變化 <span class="sort-arrow"></span></button>
+      <button class="sort-btn" data-sort="code">代號 <span class="sort-arrow"></span></button>
+      <button class="sort-btn" data-sort="name">名稱 <span class="sort-arrow"></span></button>
     </div>
     <div class="holdings-list" id="holdings-list"></div>
   </div>
@@ -508,11 +885,17 @@ footer {
 <script>
 'use strict';
 
-const DATA_URL = 'data/holdings.json';
+/* ── State ──────────────────────────────────────────────────────────────── */
+let currentData   = null;
+let holdingsCache = [];
+let changeMap     = {};   // code → change type
+let sortConfig    = { key: 'weight', dir: 'desc' };
+let currentDate   = '';   // YYYY-MM-DD
 
-/* ── Utilities ─────────────────────────────────────────────────────────── */
+/* ── Utilities ──────────────────────────────────────────────────────────── */
 const fmt = (n, d = 2) =>
-  (n === null || n === undefined || n === 'N/A') ? 'N/A' : Number(n).toFixed(d);
+  (n === null || n === undefined || n === 'N/A') ? 'N/A'
+  : Number(n).toFixed(d);
 
 const signOf = v => (v > 0 ? '+' : '');
 
@@ -520,28 +903,108 @@ function animate(fn, delay = 120) {
   requestAnimationFrame(() => setTimeout(fn, delay));
 }
 
-/* ── Fetch data ─────────────────────────────────────────────────────────── */
-async function loadData() {
-  try {
-    const r = await fetch(DATA_URL + '?_=' + Date.now());
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  } catch (e) {
-    console.error('Data load failed:', e);
-    return null;
-  }
+function toYMD(date) {
+  return date.toISOString().slice(0, 10);
 }
 
-/* ── Render: Metrics ────────────────────────────────────────────────────── */
+function prevWeekday(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  do { d.setDate(d.getDate() - 1); } while (d.getDay() === 0 || d.getDay() === 6);
+  return toYMD(d);
+}
+
+function nextWeekday(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = toYMD(new Date());
+  do { d.setDate(d.getDate() + 1); } while (d.getDay() === 0 || d.getDay() === 6);
+  return toYMD(d) <= today ? toYMD(d) : null;
+}
+
+/* ── Fetch ──────────────────────────────────────────────────────────────── */
+async function fetchJSON(url) {
+  const r = await fetch(url + '?_=' + Date.now());
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function loadDate(dateStr) {
+  let data = null;
+  try {
+    data = await fetchJSON(`data/holdings-${dateStr}.json`);
+  } catch {
+    try {
+      data = await fetchJSON('data/holdings.json');
+    } catch (e) {
+      console.error('Data load failed:', e);
+    }
+  }
+  return data;
+}
+
+/* ── Tags ───────────────────────────────────────────────────────────────── */
+const TAG_DEF = {
+  added:     ['tag-added',     '新增'],
+  removed:   ['tag-removed',   '清倉'],
+  increased: ['tag-increased', '加碼'],
+  decreased: ['tag-decreased', '減碼'],
+};
+
+function tagHtml(type) {
+  if (!type || !TAG_DEF[type]) return '';
+  const [cls, label] = TAG_DEF[type];
+  return `<span class="tag ${cls}">${label}</span>`;
+}
+
+function buildChangeMap(changes) {
+  const m = {};
+  for (const [type, items] of Object.entries(changes || {})) {
+    for (const it of items || []) m[it.code] = type;
+  }
+  return m;
+}
+
+/* ── Metrics ────────────────────────────────────────────────────────────── */
 function renderMetrics(data) {
-  const m = data.metrics || {};
+  const holdings = data.holdings || [];
+  const total    = holdings.reduce((s, h) => s + (h.weight || 0), 0);
+  const top5sum  = holdings.slice(0, 5).reduce((s, h) => s + (h.weight || 0), 0);
+  const heavyCnt = holdings.filter(h => h.weight >= 5).length;
+  const changes  = data.changes || {};
+  const changeTotal =
+    (changes.added || []).length +
+    (changes.removed || []).length +
+    (changes.increased || []).length +
+    (changes.decreased || []).length;
+
   const cards = [
-    { label: 'SCALE // 基金規模',    value: m.scale || 'N/A' },
-    { label: 'NAV // 淨值',          value: m.nav   || 'N/A' },
-    { label: 'YTD RETURN // 年初至今', value: m.return_ytd || 'N/A' },
-    { label: '1Y RETURN // 一年報酬', value: m.return_1y  || 'N/A' },
-    { label: 'HOLDINGS // 持股檔數',  value: m.holdings_count || (data.holdings || []).length, unit: '檔' },
-    { label: 'DATA DATE // 資料日期', value: data.date || 'N/A', small: true },
+    {
+      label: 'HOLDINGS // 持股檔數',
+      value: holdings.length,
+      unit: '檔',
+    },
+    {
+      label: 'TOP 5 WEIGHT // 前五大比例',
+      value: fmt(top5sum) + '%',
+    },
+    {
+      label: 'HEAVY ≥5% // 重倉數',
+      value: heavyCnt,
+      unit: '檔',
+    },
+    {
+      label: 'TOTAL WEIGHT // 持股合計',
+      value: fmt(total) + '%',
+    },
+    {
+      label: 'CHANGES // 今日異動',
+      value: changeTotal,
+      unit: '筆',
+    },
+    {
+      label: 'DATA DATE // 資料日期',
+      value: data.date || '——',
+      small: true,
+    },
   ];
 
   document.getElementById('metrics-grid').innerHTML = cards.map(c => `
@@ -553,52 +1016,87 @@ function renderMetrics(data) {
   `).join('');
 }
 
-/* ── Render: Holdings ───────────────────────────────────────────────────── */
+/* ── Holdings ───────────────────────────────────────────────────────────── */
+function sortHoldings(arr) {
+  const { key, dir } = sortConfig;
+  const mul = dir === 'desc' ? -1 : 1;
+  return [...arr].sort((a, b) => {
+    let va, vb;
+    if (key === 'weight')       { va = a.weight || 0; vb = b.weight || 0; }
+    else if (key === 'change')  { va = a.change || 0; vb = b.change || 0; }
+    else if (key === 'code')    { va = a.code || '';  vb = b.code || '';  return mul * va.localeCompare(vb); }
+    else if (key === 'name')    { va = a.name || '';  vb = b.name || '';  return mul * va.localeCompare(vb, 'zh-TW'); }
+    return mul * (vb - va);
+  });
+}
+
+function updateSortUI() {
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    const k = btn.dataset.sort;
+    const arrow = btn.querySelector('.sort-arrow');
+    btn.classList.toggle('active', k === sortConfig.key);
+    if (arrow) {
+      arrow.textContent = k === sortConfig.key ? (sortConfig.dir === 'desc' ? '↓' : '↑') : '';
+    }
+  });
+}
+
 function renderHoldings(holdings) {
-  const top = holdings.slice(0, 20);
-  const maxW = Math.max(...top.map(h => h.weight), 1);
+  const sorted = sortHoldings(holdings);
+  const maxW   = Math.max(...sorted.map(h => h.weight || 0), 1);
 
   document.getElementById('holdings-tag').textContent =
-    `TOP ${top.length} / ${holdings.length}`;
+    `TOP ${sorted.length} / ${holdings.length}`;
 
-  document.getElementById('holdings-list').innerHTML = top.map((h, i) => {
-    const pct    = ((h.weight / maxW) * 100).toFixed(1);
-    const delta  = h.change || 0;
-    const cls    = delta > 0.005 ? 'up' : delta < -0.005 ? 'down' : 'flat';
-    const chText = Math.abs(delta) < 0.005 ? '——' : `${signOf(delta)}${fmt(delta)}%`;
+  document.getElementById('holdings-list').innerHTML = sorted.map((h, i) => {
+    const barPct  = ((h.weight / maxW) * 95).toFixed(1);
+    const heavy   = h.weight >= 5;
+    const delta   = h.change || 0;
+    const cls     = delta > 0.005 ? 'up' : delta < -0.005 ? 'down' : 'flat';
+    const chText  = Math.abs(delta) < 0.005 ? '——' : `${signOf(delta)}${fmt(delta)}%`;
+    const chSign  = delta > 0.005 ? '+' : '';
+    const type    = changeMap[h.code];
 
     return `
-      <div class="holding-row">
+      <div class="holding-row" style="--row-i:${i}">
         <div class="holding-rank">#${String(i + 1).padStart(2, '0')}</div>
-        <div>
+        <div class="holding-info">
           <div class="holding-code">${h.code}</div>
-          <div class="holding-name">${h.name}</div>
+          <div class="holding-name" data-code="${h.code}">${h.name}</div>
         </div>
-        <div class="bar-wrap">
-          <div class="bar" data-target="${pct}%"></div>
+        <div class="bar-col bar-wrap">
+          <div class="bar${heavy ? ' heavy' : ''}" data-target="${barPct}%"></div>
+          <span class="bar-label">${fmt(h.weight)}%</span>
         </div>
         <div class="h-weight">${fmt(h.weight)}%</div>
         <div class="h-change ${cls}">${chText}</div>
+        <div class="h-tag">${tagHtml(type)}</div>
       </div>
     `;
   }).join('');
 
+  /* Animate bars */
   animate(() => {
     document.querySelectorAll('.bar').forEach(b => { b.style.width = b.dataset.target; });
   });
+
+  /* Stock name click → modal */
+  document.querySelectorAll('.holding-name[data-code]').forEach(el => {
+    el.addEventListener('click', () => openModal(el.dataset.code, sorted));
+  });
 }
 
-/* ── Render: Changes ────────────────────────────────────────────────────── */
+/* ── Changes ────────────────────────────────────────────────────────────── */
 function renderChanges(changes) {
   const panels = [
-    { key: 'added',     cls: 'added',     icon: '▲ NEW',  label: 'NEW POSITION // 新增建倉' },
-    { key: 'removed',   cls: 'removed',   icon: '✕ OUT',  label: 'CLOSED // 完全清倉'       },
-    { key: 'increased', cls: 'increased', icon: '↑ ADD',  label: 'INCREASED // 加碼'        },
-    { key: 'decreased', cls: 'decreased', icon: '↓ CUT',  label: 'DECREASED // 減碼'        },
+    { key: 'added',     cls: 'added',     icon: '▲ NEW', label: 'NEW POSITION // 新增建倉' },
+    { key: 'removed',   cls: 'removed',   icon: '✕ OUT', label: 'CLOSED // 完全清倉'       },
+    { key: 'increased', cls: 'increased', icon: '↑ ADD', label: 'INCREASED // 加碼'        },
+    { key: 'decreased', cls: 'decreased', icon: '↓ CUT', label: 'DECREASED // 減碼'        },
   ];
 
   document.getElementById('changes-grid').innerHTML = panels.map(p => {
-    const items = (changes[p.key] || []);
+    const items    = changes[p.key] || [];
     const isWeight = p.key === 'added' || p.key === 'removed';
 
     const rows = items.length === 0
@@ -630,7 +1128,7 @@ function renderChanges(changes) {
   }).join('');
 }
 
-/* ── Render: Sectors ────────────────────────────────────────────────────── */
+/* ── Sectors ────────────────────────────────────────────────────────────── */
 function renderSectors(holdings) {
   const map = {};
   for (const h of holdings) {
@@ -639,7 +1137,7 @@ function renderSectors(holdings) {
   }
 
   const sorted = Object.entries(map).sort((a, b) => b[1] - a[1]);
-  const maxV = sorted[0]?.[1] || 1;
+  const maxV   = sorted[0]?.[1] || 1;
 
   document.getElementById('sector-grid').innerHTML = sorted.map(([name, pct]) => `
     <div class="sector-item">
@@ -656,25 +1154,135 @@ function renderSectors(holdings) {
   }, 200);
 }
 
-/* ── Main ───────────────────────────────────────────────────────────────── */
-async function init() {
-  const data = await loadData();
+/* ── Modal ──────────────────────────────────────────────────────────────── */
+function openModal(code, sorted) {
+  const idx  = sorted.findIndex(h => h.code === code);
+  if (idx < 0) return;
+  const h    = sorted[idx];
+  const type = changeMap[h.code];
+  const delta = h.change || 0;
+  const changeClass = delta > 0.005 ? 'pos' : delta < -0.005 ? 'neg' : '';
+  const chText = Math.abs(delta) < 0.005 ? '——' : `${signOf(delta)}${fmt(delta)}%`;
 
+  document.getElementById('modal-name').textContent    = h.name;
+  document.getElementById('modal-code-num').textContent = h.code;
+  document.getElementById('modal-tag').innerHTML       = tagHtml(type);
+  document.getElementById('modal-weight').textContent  = fmt(h.weight) + '%';
+  document.getElementById('modal-change').textContent  = chText;
+  document.getElementById('modal-change').className    = 'modal-stat-value ' + changeClass;
+  document.getElementById('modal-sector').textContent  = h.sector || '——';
+  document.getElementById('modal-rank').textContent    = `RANK #${idx + 1}`;
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('modal-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ── Sort buttons ───────────────────────────────────────────────────────── */
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const k = btn.dataset.sort;
+    if (sortConfig.key === k) {
+      sortConfig.dir = sortConfig.dir === 'desc' ? 'asc' : 'desc';
+    } else {
+      sortConfig.key = k;
+      sortConfig.dir = (k === 'weight' || k === 'change') ? 'desc' : 'asc';
+    }
+    updateSortUI();
+    renderHoldings(holdingsCache);
+  });
+});
+
+/* ── Date navigation ────────────────────────────────────────────────────── */
+function updateDateNav() {
+  const today = toYMD(new Date());
+  const inp   = document.getElementById('date-input');
+  inp.value   = currentDate;
+  inp.max     = today;
+
+  const prev  = prevWeekday(currentDate);
+  const next  = nextWeekday(currentDate);
+  document.getElementById('btn-prev').disabled = false;
+  document.getElementById('btn-next').disabled = !next || next > today;
+}
+
+document.getElementById('btn-prev').addEventListener('click', () => {
+  loadAndRender(prevWeekday(currentDate));
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  const n = nextWeekday(currentDate);
+  if (n) loadAndRender(n);
+});
+
+document.getElementById('date-input').addEventListener('change', e => {
+  if (e.target.value) loadAndRender(e.target.value);
+});
+
+/* ── Render all ─────────────────────────────────────────────────────────── */
+function renderAll(data) {
+  currentData   = data;
+  holdingsCache = data.holdings || [];
+  changeMap     = buildChangeMap(data.changes);
+
+  const syncEl = document.getElementById('sync-time');
+  const dateEl = document.getElementById('data-date');
+  syncEl.textContent = data.fetched_at
+    ? new Date(data.fetched_at).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false })
+    : '——';
+  dateEl.textContent = data.date || '——';
+
+  renderMetrics(data);
+  renderHoldings(holdingsCache);
+  renderChanges(data.changes || {});
+  renderSectors(holdingsCache);
+  updateSortUI();
+}
+
+async function loadAndRender(dateStr) {
+  currentDate = dateStr;
+  updateDateNav();
+
+  document.getElementById('metrics-grid').innerHTML =
+    '<div class="loading">LOADING DATA MATRIX...</div>';
+  document.getElementById('holdings-list').innerHTML = '';
+  document.getElementById('changes-grid').innerHTML  = '';
+  document.getElementById('sector-grid').innerHTML   = '';
+
+  const data = await loadDate(dateStr);
   if (!data) {
     document.getElementById('metrics-grid').innerHTML =
       '<div class="error-msg">⚠ DATA FEED OFFLINE — CHECK data/holdings.json</div>';
     return;
   }
+  renderAll(data);
+}
 
-  document.getElementById('sync-time').textContent = data.fetched_at
-    ? new Date(data.fetched_at).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false })
-    : '——';
-  document.getElementById('data-date').textContent = data.date || '——';
+/* ── Init ───────────────────────────────────────────────────────────────── */
+async function init() {
+  const today = toYMD(new Date());
+  const inp = document.getElementById('date-input');
+  inp.max = today;
 
-  renderMetrics(data);
-  renderHoldings(data.holdings  || []);
-  renderChanges(data.changes    || {});
-  renderSectors(data.holdings   || []);
+  const data = await loadDate(today);
+  if (!data) {
+    document.getElementById('metrics-grid').innerHTML =
+      '<div class="error-msg">⚠ DATA FEED OFFLINE — CHECK data/holdings.json</div>';
+    return;
+  }
+  currentDate = data.date || today;
+  renderAll(data);
+  updateDateNav();
 }
 
 init();
