@@ -48,6 +48,55 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/holdings.json
+          git add data/
           git commit -m "data: 00981A holdings $(date -u +'%Y-%m-%d') [auto]"
           git push
+
+      - name: Notify Telegram on holdings changes
+        if: steps.diff.outputs.changed == 'true' && env.TELEGRAM_BOT_TOKEN != ''
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python - << 'PYEOF'
+          import json, os, urllib.request, urllib.parse, sys
+
+          data = json.load(open("data/holdings.json", encoding="utf-8"))
+          ch   = data.get("changes", {})
+          added     = ch.get("added",     [])
+          removed   = ch.get("removed",   [])
+          increased = ch.get("increased", [])
+          decreased = ch.get("decreased", [])
+
+          if not (added or removed or increased or decreased):
+              print("No changes — skipping notification")
+              sys.exit(0)
+
+          lines = [f"\U0001f4ca *00981A 持股異動* \\({data.get('date', '?')}\\)"]
+          if added:
+              lines.append("\n\U0001f7e2 *新增建倉*")
+              for h in added:
+                  lines.append(f"  {h['name']}（{h['code']}）\\ \\+{h['weight']:.2f}%")
+          if removed:
+              lines.append("\n\U0001f534 *完全清倉*")
+              for h in removed:
+                  lines.append(f"  {h['name']}（{h['code']}）")
+          if increased:
+              lines.append("\n\U0001f535 *加碼前五*")
+              for h in increased[:5]:
+                  lines.append(f"  {h['name']} \\ \\+{h['change']:.2f}%")
+          if decreased:
+              lines.append("\n\U0001f7e0 *減碼前五*")
+              for h in decreased[:5]:
+                  lines.append(f"  {h['name']} \\ {h['change']:+.2f}%")
+
+          msg   = "\n".join(lines)
+          token = os.environ["TELEGRAM_BOT_TOKEN"]
+          cid   = os.environ["TELEGRAM_CHAT_ID"]
+          url   = f"https://api.telegram.org/bot{token}/sendMessage"
+          body  = urllib.parse.urlencode({
+              "chat_id": cid, "text": msg, "parse_mode": "MarkdownV2"
+          }).encode()
+          urllib.request.urlopen(url, body)
+          print("Telegram notification sent!")
+          PYEOF

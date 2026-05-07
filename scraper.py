@@ -102,11 +102,13 @@ def load_previous() -> Optional[dict]:
 
 def save_data(data: dict) -> None:
     DATA_DIR.mkdir(exist_ok=True)
-    HOLDINGS_FILE.write_text(
-        json.dumps(data, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    payload = json.dumps(data, ensure_ascii=False, indent=2)
+    HOLDINGS_FILE.write_text(payload, encoding="utf-8")
     log.info("Saved %d holdings to %s", len(data.get("holdings", [])), HOLDINGS_FILE)
+    # Also write a dated snapshot so the date-picker in the UI can load history
+    dated = DATA_DIR / f"holdings-{data.get('date', date.today().isoformat())}.json"
+    dated.write_text(payload, encoding="utf-8")
+    log.info("Dated snapshot: %s", dated)
 
 
 # ── HTTP helpers ──────────────────────────────────────────────────────────────
@@ -286,6 +288,8 @@ def fetch_metrics(holdings_count: int) -> dict:
         "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
     }
     session = make_session()
+
+    # Source 1: ETFcapital → scale + NAV
     try:
         resp = get(session, "https://openapi.twse.com.tw/v1/ETFdividend/ETFcapital")
         if resp:
@@ -295,7 +299,39 @@ def fetch_metrics(holdings_count: int) -> dict:
                     metrics["nav"]   = item.get("NAV",   item.get("nav",   "N/A"))
                     break
     except Exception as exc:
-        log.debug("Metrics fetch error: %s", exc)
+        log.debug("ETFcapital fetch error: %s", exc)
+
+    # Source 2: ETFperformance → YTD / 1Y returns
+    try:
+        resp = get(session, "https://openapi.twse.com.tw/v1/ETFdividend/ETFperformance")
+        if resp:
+            for item in resp.json():
+                if item.get("ETFcode") == ETF_CODE or item.get("code") == ETF_CODE:
+                    metrics["return_ytd"] = item.get(
+                        "ReturnYTD", item.get("returnYTD", item.get("YTDReturn", "N/A")))
+                    metrics["return_1y"]  = item.get(
+                        "Return1Y",  item.get("return1Y",  item.get("OneYearReturn", "N/A")))
+                    break
+    except Exception as exc:
+        log.debug("ETFperformance fetch error: %s", exc)
+
+    # Source 3: TWSE daily ETF info (TWT38U) → NAV fallback
+    if metrics["nav"] == "N/A":
+        try:
+            resp = get(session, "https://www.twse.com.tw/fund/TWT38U",
+                       params={"response": "json", "stockNo": ETF_CODE})
+            if resp:
+                rows = resp.json().get("data", [])
+                if rows:
+                    last = rows[-1]
+                    # Columns: 日期, 受益人數, 淨資產總值, 每單位淨資產價值, ...
+                    if len(last) >= 4:
+                        metrics["nav"]   = last[3].replace(",", "") if last[3] != "--" else "N/A"
+                    if len(last) >= 3 and metrics["scale"] == "N/A":
+                        metrics["scale"] = last[2].replace(",", "") if last[2] != "--" else "N/A"
+        except Exception as exc:
+            log.debug("TWT38U fetch error: %s", exc)
+
     return metrics
 
 
