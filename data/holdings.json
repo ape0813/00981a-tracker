@@ -3,26 +3,146 @@
   "fetched_at": "2025-05-07T15:45:00",
   "_note": "SAMPLE DATA — will be replaced by scraper.py on first real run",
   "holdings": [
-    { "code": "2330", "name": "台積電",      "weight": 22.50, "change":  0.30, "sector": "半導體" },
-    { "code": "2454", "name": "聯發科",      "weight":  8.30, "change": -0.10, "sector": "半導體" },
-    { "code": "2382", "name": "廣達",        "weight":  5.20, "change":  0.05, "sector": "電子"   },
-    { "code": "3711", "name": "日月光投控",  "weight":  4.80, "change":  0.00, "sector": "半導體" },
-    { "code": "2379", "name": "瑞昱",        "weight":  4.10, "change":  0.12, "sector": "半導體" },
-    { "code": "2303", "name": "聯電",        "weight":  3.90, "change": -0.08, "sector": "半導體" },
-    { "code": "6770", "name": "力積電",      "weight":  3.50, "change":  0.20, "sector": "半導體" },
-    { "code": "2344", "name": "華邦電",      "weight":  3.20, "change":  0.00, "sector": "半導體" },
-    { "code": "3034", "name": "聯詠",        "weight":  3.00, "change": -0.05, "sector": "半導體" },
-    { "code": "2308", "name": "台達電",      "weight":  2.80, "change":  0.08, "sector": "電子"   },
-    { "code": "2449", "name": "京元電子",    "weight":  2.60, "change":  0.00, "sector": "半導體" },
-    { "code": "3443", "name": "創意",        "weight":  2.40, "change":  0.15, "sector": "半導體" },
-    { "code": "6415", "name": "矽力-KY",     "weight":  2.20, "change": -0.12, "sector": "半導體" },
-    { "code": "8046", "name": "南電",        "weight":  2.00, "change":  0.03, "sector": "半導體" },
-    { "code": "3044", "name": "健鼎",        "weight":  1.80, "change":  0.00, "sector": "電子"   },
-    { "code": "2337", "name": "旺宏",        "weight":  1.70, "change": -0.07, "sector": "半導體" },
-    { "code": "5347", "name": "世界先進",    "weight":  1.60, "change":  0.10, "sector": "半導體" },
-    { "code": "2317", "name": "鴻海",        "weight":  1.50, "change":  0.00, "sector": "電子"   },
-    { "code": "2357", "name": "華碩",        "weight":  1.40, "change": -0.03, "sector": "電子"   },
-    { "code": "2392", "name": "正崴",        "weight":  1.30, "change":  0.02, "sector": "電子"   }
+    {
+      "code": "2330",
+      "name": "台積電",
+      "weight": 22.5,
+      "change": 0.3,
+      "sector": "半導體"
+    },
+    {
+      "code": "2454",
+      "name": "聯發科",
+      "weight": 8.3,
+      "change": -0.1,
+      "sector": "半導體"
+    },
+    {
+      "code": "2382",
+      "name": "廣達",
+      "weight": 5.2,
+      "change": 0.05,
+      "sector": "電子"
+    },
+    {
+      "code": "3711",
+      "name": "日月光投控",
+      "weight": 4.8,
+      "change": 0.0,
+      "sector": "半導體"
+    },
+    {
+      "code": "2379",
+      "name": "瑞昱",
+      "weight": 4.1,
+      "change": 0.12,
+      "sector": "半導體"
+    },
+    {
+      "code": "2303",
+      "name": "聯電",
+      "weight": 3.9,
+      "change": -0.08,
+      "sector": "半導體"
+    },
+    {
+      "code": "6770",
+      "name": "力積電",
+      "weight": 3.5,
+      "change": 0.2,
+      "sector": "半導體"
+    },
+    {
+      "code": "2344",
+      "name": "華邦電",
+      "weight": 3.2,
+      "change": 0.0,
+      "sector": "半導體"
+    },
+    {
+      "code": "3034",
+      "name": "聯詠",
+      "weight": 3.0,
+      "change": -0.05,
+      "sector": "半導體"
+    },
+    {
+      "code": "2308",
+      "name": "台達電",
+      "weight": 2.8,
+      "change": 0.08,
+      "sector": "電子"
+    },
+    {
+      "code": "2449",
+      "name": "京元電子",
+      "weight": 2.6,
+      "change": 0.0,
+      "sector": "半導體"
+    },
+    {
+      "code": "3443",
+      "name": "創意",
+      "weight": 2.4,
+      "change": 0.15,
+      "sector": "半導體"
+    },
+    {
+      "code": "6415",
+      "name": "矽力-KY",
+      "weight": 2.2,
+      "change": -0.12,
+      "sector": "半導體"
+    },
+    {
+      "code": "8046",
+      "name": "南電",
+      "weight": 2.0,
+      "change": 0.03,
+      "sector": "半導體"
+    },
+    {
+      "code": "3044",
+      "name": "健鼎",
+      "weight": 1.8,
+      "change": 0.0,
+      "sector": "電子"
+    },
+    {
+      "code": "2337",
+      "name": "旺宏",
+      "weight": 1.7,
+      "change": -0.07,
+      "sector": "半導體"
+    },
+    {
+      "code": "5347",
+      "name": "世界先進",
+      "weight": 1.6,
+      "change": 0.1,
+      "sector": "半導體"
+    },
+    {
+      "code": "2317",
+      "name": "鴻海",
+      "weight": 1.5,
+      "change": 0.0,
+      "sector": "電子"
+    },
+    {
+      "code": "2357",
+      "name": "華碩",
+      "weight": 1.4,
+      "change": -0.03,
+      "sector": "電子"
+    },
+    {
+      "code": "2392",
+      "name": "正崴",
+      "weight": 1.3,
+      "change": 0.02,
+      "sector": "電子"
+    }
   ],
   "metrics": {
     "scale": "SAMPLE",
@@ -34,20 +154,69 @@
   },
   "changes": {
     "added": [
-      { "code": "6770", "name": "力積電", "weight": 3.50, "change": 0.0, "sector": "半導體" }
+      {
+        "code": "6770",
+        "name": "力積電",
+        "weight": 3.5,
+        "change": 0.0,
+        "sector": "半導體"
+      }
     ],
     "removed": [
-      { "code": "2881", "name": "富邦金", "weight": 1.10, "change": 0.0, "sector": "金融" }
+      {
+        "code": "2881",
+        "name": "富邦金",
+        "weight": 1.1,
+        "change": 0.0,
+        "sector": "金融"
+      }
     ],
     "increased": [
-      { "code": "2330", "name": "台積電",   "weight": 22.50, "change":  0.30, "sector": "半導體" },
-      { "code": "3443", "name": "創意",     "weight":  2.40, "change":  0.15, "sector": "半導體" },
-      { "code": "2379", "name": "瑞昱",     "weight":  4.10, "change":  0.12, "sector": "半導體" }
+      {
+        "code": "2330",
+        "name": "台積電",
+        "weight": 22.5,
+        "change": 0.3,
+        "sector": "半導體"
+      },
+      {
+        "code": "3443",
+        "name": "創意",
+        "weight": 2.4,
+        "change": 0.15,
+        "sector": "半導體"
+      },
+      {
+        "code": "2379",
+        "name": "瑞昱",
+        "weight": 4.1,
+        "change": 0.12,
+        "sector": "半導體"
+      }
     ],
     "decreased": [
-      { "code": "6415", "name": "矽力-KY",  "weight":  2.20, "change": -0.12, "sector": "半導體" },
-      { "code": "2303", "name": "聯電",     "weight":  3.90, "change": -0.08, "sector": "半導體" },
-      { "code": "2337", "name": "旺宏",     "weight":  1.70, "change": -0.07, "sector": "半導體" }
+      {
+        "code": "6415",
+        "name": "矽力-KY",
+        "weight": 2.2,
+        "change": -0.12,
+        "sector": "半導體"
+      },
+      {
+        "code": "2303",
+        "name": "聯電",
+        "weight": 3.9,
+        "change": -0.08,
+        "sector": "半導體"
+      },
+      {
+        "code": "2337",
+        "name": "旺宏",
+        "weight": 1.7,
+        "change": -0.07,
+        "sector": "半導體"
+      }
     ]
-  }
+  },
+  "fetch_attempted": "2026-05-07T12:08:43.732462"
 }
