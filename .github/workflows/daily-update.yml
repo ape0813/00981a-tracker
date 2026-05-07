@@ -53,12 +53,13 @@ jobs:
           git push
 
       - name: Notify LINE on holdings changes
-        if: steps.diff.outputs.changed == 'true' && env.LINE_NOTIFY_TOKEN != ''
+        if: steps.diff.outputs.changed == 'true' && env.LINE_CHANNEL_TOKEN != ''
         env:
-          LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
+          LINE_CHANNEL_TOKEN: ${{ secrets.LINE_CHANNEL_TOKEN }}
+          LINE_USER_ID:       ${{ secrets.LINE_USER_ID }}
         run: |
           python - << 'PYEOF'
-          import json, os, urllib.request, urllib.parse, sys
+          import json, os, urllib.request, sys
 
           data = json.load(open("data/holdings.json", encoding="utf-8"))
           ch   = data.get("changes", {})
@@ -71,7 +72,7 @@ jobs:
               print("No changes — skipping notification")
               sys.exit(0)
 
-          lines = [f"\n📊 00981A 持股異動（{data.get('date', '?')}）"]
+          lines = [f"📊 00981A 持股異動（{data.get('date', '?')}）"]
           if added:
               lines.append("\n🟢 新增建倉")
               for h in added:
@@ -89,14 +90,18 @@ jobs:
               for h in decreased[:5]:
                   lines.append(f"  {h['name']} {h['change']:+.2f}%")
 
-          msg   = "\n".join(lines)
-          token = os.environ["LINE_NOTIFY_TOKEN"]
-          body  = urllib.parse.urlencode({"message": msg}).encode()
-          req   = urllib.request.Request(
-              "https://notify-api.line.me/api/notify",
-              data=body,
-              headers={"Authorization": f"Bearer {token}"},
+          payload = json.dumps({
+              "to": os.environ["LINE_USER_ID"],
+              "messages": [{"type": "text", "text": "\n".join(lines)}],
+          }).encode()
+          req = urllib.request.Request(
+              "https://api.line.me/v2/bot/message/push",
+              data=payload,
+              headers={
+                  "Authorization": f"Bearer {os.environ['LINE_CHANNEL_TOKEN']}",
+                  "Content-Type": "application/json",
+              },
           )
           urllib.request.urlopen(req)
-          print("LINE Notify sent!")
+          print("LINE message sent!")
           PYEOF
