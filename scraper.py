@@ -146,45 +146,81 @@ def get(session: requests.Session, url: str, **kwargs) -> Optional[requests.Resp
 
 # ── Data sources ──────────────────────────────────────────────────────────────
 
+def _parse_numeric_cols(cols: list[str]) -> tuple[Optional[float], Optional[int]]:
+    """
+    Return (weight_pct, shares) parsed from a table row's columns.
+    weight: small float 0-100 (last such column)
+    shares: large integer > 1000 (largest such column, converted to shares if given in 張)
+    """
+    weight: Optional[float] = None
+    shares: Optional[int]   = None
+
+    for raw in reversed(cols):
+        clean = raw.replace("%", "").replace(",", "").strip()
+        if not clean.lstrip("-").replace(".", "", 1).isdigit():
+            continue
+        try:
+            val = float(clean)
+        except ValueError:
+            continue
+        if 0 < val <= 100 and weight is None:
+            weight = val
+        elif val > 1000 and shares is None:
+            # Might be in 張 (lots) or in 股 (shares); keep as raw integer
+            shares = int(val)
+
+    return weight, shares
+
+
 def _parse_holdings_table(soup: BeautifulSoup) -> Optional[list[dict]]:
     """
     Generic parser for TWSE-style HTML tables.
-    Expected columns: 代號 | 名稱 | 持股比例(%)
-    Adjust col indices if a specific site uses a different layout.
+    Extracts: 代號 | 名稱 | 持股比例(%) | 持有股數/張數 (if present)
     """
     tables = soup.find_all("table")
     best: list[dict] = []
 
     for table in tables:
-        rows = table.find_all("tr")
+        rows   = table.find_all("tr")
         parsed: list[dict] = []
+
+        # Detect header to guess if shares column is in 張 or 股
+        header_text = " ".join(
+            td.get_text(strip=True) for td in (rows[0].find_all(["td", "th"]) if rows else [])
+        )
+        shares_in_zhang = "張" in header_text  # True → multiply by 1000 to get shares
+
         for row in rows[1:]:
             cols = [td.get_text(strip=True) for td in row.find_all(["td", "th"])]
             if len(cols) < 3:
                 continue
+
             code = cols[0].strip()
             name = cols[1].strip()
-            # Weight usually appears in the last numeric column
-            weight_raw = next(
-                (c.replace("%", "").replace(",", "") for c in reversed(cols) if c.replace(".", "").replace("%", "").replace(",", "").lstrip("-").isdigit()),
-                None,
-            )
-            if not weight_raw or not code or not name:
-                continue
-            try:
-                weight = float(weight_raw)
-            except ValueError:
-                continue
-            # Filter noise: codes are 4-5 digits
             if not (4 <= len(code) <= 6 and code.isdigit()):
+                # Try second and third columns
+                code = cols[1].strip() if len(cols) > 1 else ""
+                name = cols[2].strip() if len(cols) > 2 else ""
+                if not (4 <= len(code) <= 6 and code.isdigit()):
+                    continue
+
+            weight, shares_raw = _parse_numeric_cols(cols)
+            if weight is None:
                 continue
+
+            shares: Optional[int] = None
+            if shares_raw is not None:
+                shares = shares_raw * 1000 if shares_in_zhang else shares_raw
+
             parsed.append({
-                "code": code,
-                "name": name,
+                "code":   code,
+                "name":   name,
                 "weight": round(weight, 4),
+                "shares": shares,
                 "change": 0.0,
                 "sector": infer_sector(code),
             })
+
         if len(parsed) > len(best):
             best = parsed
 
@@ -219,10 +255,20 @@ def fetch_openapi_twse() -> Optional[list[dict]]:
                 name   = str(item.get("Name",   item.get("name",   item.get("stockName", "")))).strip()
                 weight = float(item.get("Ratio", item.get("ratio",  item.get("weight",    0))))
                 if code and name and 4 <= len(code) <= 6:
+                    shares_raw = item.get("Shares", item.get("shares",
+                                 item.get("SharesHeld", item.get("sharesHeld",
+                                 item.get("Volume", item.get("volume", None))))))
+                    shares: Optional[int] = None
+                    if shares_raw is not None:
+                        try:
+                            shares = int(float(str(shares_raw).replace(",", "")))
+                        except (ValueError, TypeError):
+                            pass
                     holdings.append({
-                        "code": code,
-                        "name": name,
+                        "code":   code,
+                        "name":   name,
                         "weight": round(weight, 4),
+                        "shares": shares,
                         "change": 0.0,
                         "sector": infer_sector(code),
                     })
@@ -367,6 +413,11 @@ def detect_changes(current: list[dict], previous: Optional[dict]) -> dict:
         delta = round(h["weight"] - prev[code]["weight"], 4)
         if abs(delta) >= 0.01:
             item = {**h, "change": delta}
+            # Calculate shares change in 張 (1張 = 1000股)
+            curr_shares = h.get("shares")
+            prev_shares = prev[code].get("shares")
+            if curr_shares is not None and prev_shares is not None:
+                item["shares_change"] = curr_shares - prev_shares  # in 股
             (increased if delta > 0 else decreased).append(item)
 
     return {

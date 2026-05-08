@@ -87,6 +87,16 @@ jobs:
               print("No changes — skipping notification")
               sys.exit(0)
 
+          def fmt_zhang(h, sign=True):
+              sc = h.get("shares_change")
+              if sc is None:
+                  return ""
+              zhang = sc // 1000
+              if zhang == 0:
+                  return ""
+              prefix = "+" if zhang > 0 else ""
+              return f"  {prefix}{zhang:,} 張"
+
           lines = [f"📊 00981A 每日更新（{data.get('date', '?')}）"]
 
           # 持股異動區塊
@@ -95,19 +105,21 @@ jobs:
               if added:
                   lines.append("🟢 新增建倉")
                   for h in added:
-                      lines.append(f"  {h['name']}（{h['code']}）+{h['weight']:.2f}%")
+                      shares_txt = f"  {h['shares']//1000:,} 張" if h.get("shares") else ""
+                      lines.append(f"  {h['name']}（{h['code']}）+{h['weight']:.2f}%{shares_txt}")
               if removed:
                   lines.append("🔴 完全清倉")
                   for h in removed:
-                      lines.append(f"  {h['name']}（{h['code']}）")
+                      shares_txt = f"  -{h['shares']//1000:,} 張" if h.get("shares") else ""
+                      lines.append(f"  {h['name']}（{h['code']}）{shares_txt}")
               if increased:
                   lines.append("🔵 加碼前五")
                   for h in increased[:5]:
-                      lines.append(f"  {h['name']} +{h['change']:.2f}%")
+                      lines.append(f"  {h['name']} +{h['change']:.2f}%{fmt_zhang(h)}")
               if decreased:
                   lines.append("🟠 減碼前五")
                   for h in decreased[:5]:
-                      lines.append(f"  {h['name']} {h['change']:+.2f}%")
+                      lines.append(f"  {h['name']} {h['change']:+.2f}%{fmt_zhang(h)}")
 
           # 持股重疊異動區塊
           if has_overlap:
