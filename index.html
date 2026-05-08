@@ -734,6 +734,151 @@ footer {
   .sector-layout { grid-template-columns: 1fr; }
   .donut-wrap { margin: 0 auto 16px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ETF COMPARISON PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cmp-toggle {
+  position: fixed; bottom: 28px; right: 28px;
+  background: rgba(255,0,255,.1);
+  border: 1px solid var(--magenta);
+  color: var(--magenta); font-family: var(--font-ui);
+  font-size: 12px; letter-spacing: 2px; padding: 10px 18px;
+  cursor: pointer; z-index: 900;
+  text-shadow: 0 0 8px var(--magenta);
+  box-shadow: 0 0 24px rgba(255,0,255,.2);
+  transition: all .22s;
+}
+.cmp-toggle:hover { background: rgba(255,0,255,.22); box-shadow: 0 0 36px rgba(255,0,255,.4); }
+.cmp-toggle.active {
+  background: rgba(0,255,249,.1); border-color: var(--cyan); color: var(--cyan);
+  text-shadow: 0 0 8px var(--cyan); box-shadow: 0 0 24px rgba(0,255,249,.25);
+}
+
+.cmp-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  backdrop-filter: blur(2px); z-index: 1400;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.cmp-backdrop.show { opacity: 1; pointer-events: all; }
+
+.cmp-panel {
+  position: fixed; top: 0; right: -520px; bottom: 0;
+  width: 500px; max-width: 100vw;
+  background: rgba(4,4,15,.98);
+  border-left: 1px solid var(--border);
+  box-shadow: -12px 0 48px rgba(0,0,0,.7);
+  z-index: 1500; display: flex; flex-direction: column;
+  transition: right .3s cubic-bezier(.25,.46,.45,.94);
+}
+.cmp-panel.open { right: 0; }
+
+.cmp-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.cmp-title {
+  font-family: var(--font-num); font-size: 13px; letter-spacing: 4px;
+  color: var(--magenta); text-shadow: 0 0 8px var(--magenta);
+}
+.cmp-close {
+  background: none; border: none; color: var(--text);
+  font-size: 20px; cursor: pointer; opacity: .5;
+  transition: opacity .15s, color .15s; line-height: 1;
+}
+.cmp-close:hover { opacity: 1; color: var(--cyan); }
+
+.cmp-selector {
+  padding: 12px 18px 10px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,.25); flex-shrink: 0;
+}
+.cmp-selector-lbl {
+  font-size: 10px; letter-spacing: 3px; color: var(--cyan); opacity: .6;
+  margin-bottom: 8px; text-transform: uppercase;
+}
+.cmp-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.cmp-chip {
+  padding: 3px 10px; font-size: 11px; letter-spacing: 1px;
+  border: 1px solid var(--border); cursor: pointer;
+  color: var(--text); background: transparent; font-family: var(--font-ui);
+  transition: all .15s; user-select: none;
+}
+.cmp-chip:hover { border-color: rgba(255,255,255,.3); color: var(--bright); }
+.cmp-chip.active { background: rgba(255,255,255,.04); }
+
+.cmp-tabs {
+  display: flex; flex-shrink: 0;
+  border-bottom: 1px solid var(--border); padding: 0 18px;
+}
+.cmp-tab {
+  padding: 9px 11px; font-size: 11px; letter-spacing: 1px;
+  background: none; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; color: var(--text); font-family: var(--font-ui);
+  transition: color .15s, border-color .15s; white-space: nowrap;
+}
+.cmp-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+.cmp-tab:hover:not(.active) { color: var(--bright); }
+
+.cmp-body {
+  flex: 1; overflow-y: auto; padding: 16px 18px 36px;
+}
+.cmp-body::-webkit-scrollbar { width: 4px; }
+.cmp-body::-webkit-scrollbar-thumb { background: rgba(0,255,249,.2); }
+
+.cmp-loading {
+  text-align: center; padding: 48px 0; color: var(--cyan);
+  letter-spacing: 4px; font-size: 13px;
+  animation: blink 1s step-end infinite;
+}
+.cmp-empty {
+  text-align: center; padding: 40px 0;
+  color: var(--text); opacity: .4; font-size: 12px; letter-spacing: 3px;
+}
+.cmp-block-title {
+  font-size: 10px; letter-spacing: 3px; color: var(--cyan); opacity: .6;
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.cmp-block {
+  background: rgba(0,255,249,.02); border: 1px solid var(--border);
+  padding: 14px; margin-bottom: 14px;
+}
+.cmp-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.cmp-bar-etf { width: 72px; font-size: 10px; color: var(--text); opacity: .65; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cmp-bar-track { flex: 1; height: 7px; background: rgba(255,255,255,.06); overflow: hidden; }
+.cmp-bar-fill  { height: 100%; width: 0; transition: width .8s cubic-bezier(.25,.46,.45,.94); }
+.cmp-bar-val   { width: 50px; font-family: var(--font-num); font-size: 11px; text-align: right; flex-shrink: 0; }
+
+.cmp-top-row {
+  display: flex; align-items: center; gap: 10px; padding: 7px 8px;
+  background: rgba(0,255,249,.015); border: 1px solid transparent;
+  margin-bottom: 4px; transition: border-color .15s;
+}
+.cmp-top-row:hover { border-color: rgba(0,255,249,.2); }
+.cmp-top-rank { font-family: var(--font-num); font-size: 10px; color: var(--text); opacity: .4; width: 22px; flex-shrink: 0; }
+.cmp-top-info { flex: 1; min-width: 0; }
+.cmp-top-code { font-size: 10px; color: var(--cyan); opacity: .7; }
+.cmp-top-name { font-size: 12px; color: var(--bright); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmp-top-dots { display: flex; gap: 3px; align-items: center; flex-shrink: 0; }
+.cmp-top-dot  { width: 32px; height: 18px; display: flex; align-items: center; justify-content: center; font-family: var(--font-num); font-size: 10px; border: 1px solid; }
+
+.cmp-overlap-item {
+  padding: 8px 8px; border-bottom: 1px solid rgba(255,255,255,.04);
+  display: flex; align-items: center; gap: 10px;
+}
+.cmp-overlap-stock { flex: 1; min-width: 0; }
+.cmp-overlap-code  { font-size: 10px; color: var(--cyan); opacity: .7; }
+.cmp-overlap-name  { font-size: 12px; color: var(--bright); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmp-overlap-badges { display: flex; gap: 3px; flex-wrap: wrap; flex-shrink: 0; }
+.cmp-overlap-badge  { padding: 2px 5px; font-size: 10px; border: 1px solid; white-space: nowrap; font-family: var(--font-num); }
+
+@media (max-width: 560px) {
+  .cmp-panel { width: 100%; right: -100%; }
+  .cmp-toggle { bottom: 16px; right: 16px; }
+}
 </style>
 </head>
 <body>
@@ -894,6 +1039,29 @@ footer {
   </footer>
 
 </div><!-- .wrap -->
+
+<!-- ── ETF Comparison Panel ── -->
+<button class="cmp-toggle" id="cmp-toggle">⇄ ETF 比較</button>
+<div class="cmp-backdrop" id="cmp-backdrop"></div>
+<div class="cmp-panel" id="cmp-panel">
+  <div class="cmp-header">
+    <div class="cmp-title">ETF COMPARE // 比較分析</div>
+    <button class="cmp-close" id="cmp-close">✕</button>
+  </div>
+  <div class="cmp-selector">
+    <div class="cmp-selector-lbl">SELECT ETFs // 選擇比較標的</div>
+    <div class="cmp-chips" id="cmp-chips"></div>
+  </div>
+  <div class="cmp-tabs">
+    <button class="cmp-tab active" data-tab="concentration">集中度</button>
+    <button class="cmp-tab" data-tab="top10">前10大持股</button>
+    <button class="cmp-tab" data-tab="overlap">持股重疊</button>
+    <button class="cmp-tab" data-tab="sector">產業分布</button>
+  </div>
+  <div class="cmp-body" id="cmp-body">
+    <div class="cmp-empty">點擊上方按鈕選擇 ETF 開始比較</div>
+  </div>
+</div>
 
 <script>
 'use strict';
@@ -1615,6 +1783,350 @@ window.addEventListener('resize', () => {
     if (holdingsCache.length) renderHeatmap(holdingsCache);
   }, 220);
 });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ETF COMPARISON PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+const COMPARE_ETF_LIST = [
+  { code: '00981A', name: '中信半導體正2' },
+  { code: '00891',  name: '中信關鍵半導體' },
+  { code: '00892',  name: '富邦台灣半導體' },
+  { code: '00982A', name: '富邦半導體正2'  },
+  { code: '00991A', name: '國泰台灣領袖50' },
+  { code: '00992A', name: '國泰台灣領袖正2'},
+  { code: '009816', name: '中信半導體反1'  },
+  { code: '0050',   name: '元大台灣50'     },
+  { code: '0056',   name: '元大高股息'     },
+  { code: '00919',  name: '群益精選高息'   },
+];
+
+const ETF_COLOR = {
+  '00981A':'#00fff9','00891':'#ff00ff','00892':'#00ff41',
+  '00982A':'#ffe600','00991A':'#ff8c00','00992A':'#ff6eb0',
+  '009816':'#a06fff','0050':'#5ad3ff','0056':'#ffaa44','00919':'#7aff7a',
+};
+const cmpColor = code => ETF_COLOR[code] || '#b0b8cc';
+
+let cmpSelected  = ['00981A'];
+let cmpCache     = {};
+let cmpTab       = 'concentration';
+let cmpTWSE      = null;
+let cmpOpened    = false;
+
+/* ── Panel open / close ─────────────────────────────────────────────────── */
+function openCmp() {
+  document.getElementById('cmp-panel').classList.add('open');
+  document.getElementById('cmp-backdrop').classList.add('show');
+  document.getElementById('cmp-toggle').classList.add('active');
+  document.getElementById('cmp-toggle').textContent = '✕ 關閉比較';
+  if (!cmpOpened) { cmpOpened = true; initCmpChips(); }
+  cmpLoadData();
+}
+function closeCmp() {
+  document.getElementById('cmp-panel').classList.remove('open');
+  document.getElementById('cmp-backdrop').classList.remove('show');
+  document.getElementById('cmp-toggle').classList.remove('active');
+  document.getElementById('cmp-toggle').textContent = '⇄ ETF 比較';
+}
+document.getElementById('cmp-toggle').addEventListener('click', () => {
+  document.getElementById('cmp-panel').classList.contains('open') ? closeCmp() : openCmp();
+});
+document.getElementById('cmp-close').addEventListener('click', closeCmp);
+document.getElementById('cmp-backdrop').addEventListener('click', closeCmp);
+document.querySelectorAll('.cmp-tab').forEach(t =>
+  t.addEventListener('click', () => { cmpTab = t.dataset.tab; cmpSwitchTab(); })
+);
+
+/* ── Chip init ──────────────────────────────────────────────────────────── */
+function initCmpChips() {
+  const wrap = document.getElementById('cmp-chips');
+  wrap.innerHTML = COMPARE_ETF_LIST.map(e => `
+    <div class="cmp-chip${e.code==='00981A'?' active':''}" data-code="${e.code}"
+         style="${e.code==='00981A'?'border-color:'+cmpColor(e.code)+';color:'+cmpColor(e.code):''}"
+         title="${e.name}">
+      ${e.code}
+    </div>`).join('');
+  wrap.querySelectorAll('.cmp-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const code = chip.dataset.code;
+      if (code === '00981A') return;
+      if (cmpSelected.includes(code)) {
+        cmpSelected = cmpSelected.filter(c => c !== code);
+        chip.classList.remove('active');
+        chip.style.borderColor = ''; chip.style.color = '';
+      } else {
+        cmpSelected.push(code);
+        chip.classList.add('active');
+        chip.style.borderColor = cmpColor(code);
+        chip.style.color = cmpColor(code);
+      }
+      cmpRender();
+    });
+  });
+}
+
+/* ── Data loading ───────────────────────────────────────────────────────── */
+const CMP_SMAP = {
+  '2330':'半導體','2454':'半導體','2379':'半導體','2303':'半導體','3711':'半導體',
+  '6770':'半導體','2344':'半導體','3034':'半導體','2308':'半導體','2449':'半導體',
+  '3443':'半導體','6415':'半導體','8046':'半導體','2337':'半導體','5347':'半導體',
+  '2317':'電子',  '2382':'電子',  '2357':'電子',  '3008':'電子',  '2301':'電子',
+  '2392':'電子',  '2353':'電子',  '2324':'電子',  '6669':'電子',  '2327':'電子',
+  '2356':'電子',  '2360':'電子',  '3044':'電子',
+  '2882':'金融',  '2886':'金融',  '2884':'金融',  '2891':'金融',  '2885':'金融',
+  '2892':'金融',  '2881':'金融',  '5880':'金融',  '2890':'金融',
+  '2412':'電信',  '3045':'電信',  '4904':'電信',
+  '1301':'石化',  '1303':'石化',  '6505':'石化',
+  '2002':'鋼鐵',  '2006':'鋼鐵',
+  '2912':'消費',  '9910':'消費',  '2204':'消費',
+  '2330':'半導體','2308':'半導體',
+  '2002':'鋼鐵',
+};
+const cmpSector = code => CMP_SMAP[code] || '其他';
+
+async function cmpLoadData() {
+  /* 00981A always comes from current page data */
+  cmpCache['00981A'] = holdingsCache;
+
+  const missing = COMPARE_ETF_LIST
+    .filter(e => e.code !== '00981A' && !cmpCache[e.code]);
+  if (!missing.length) { cmpRender(); return; }
+
+  document.getElementById('cmp-body').innerHTML =
+    '<div class="cmp-loading">FETCHING ETF DATA...</div>';
+
+  /* Try TWSE OpenAPI once */
+  if (!cmpTWSE) {
+    try {
+      const r = await fetch('https://openapi.twse.com.tw/v1/ETFdividend/ETFcomponent');
+      if (r.ok) cmpTWSE = await r.json();
+    } catch {}
+  }
+
+  await Promise.all(missing.map(async etf => {
+    /* 1. local pre-fetched file */
+    try {
+      const r = await fetch(`data/compare/${etf.code}.json?_=${Date.now()}`);
+      if (r.ok) { const d = await r.json(); cmpCache[etf.code] = d.holdings || d; return; }
+    } catch {}
+    /* 2. TWSE all-ETF data */
+    if (cmpTWSE) {
+      const rows = cmpTWSE.filter(x =>
+        (x.ETFcode || x.etfCode || x.ETFCode || '') === etf.code
+      );
+      if (rows.length) {
+        cmpCache[etf.code] = rows.map(x => ({
+          code:   String(x.Code   || x.code   || '').trim(),
+          name:   String(x.Name   || x.name   || '').trim(),
+          weight: parseFloat(x.Ratio || x.ratio || x.Percent || 0),
+          sector: cmpSector(String(x.Code || x.code || '')),
+        })).filter(x => x.code && x.weight > 0)
+           .sort((a, b) => b.weight - a.weight);
+      }
+    }
+  }));
+
+  cmpRender();
+}
+
+/* ── Tab switch ─────────────────────────────────────────────────────────── */
+function cmpSwitchTab() {
+  document.querySelectorAll('.cmp-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.tab === cmpTab));
+  cmpRender();
+}
+
+function cmpRender() {
+  const sel = cmpSelected.filter(c => cmpCache[c]);
+  if (!sel.length) {
+    document.getElementById('cmp-body').innerHTML =
+      '<div class="cmp-empty">請選擇要比較的 ETF</div>'; return;
+  }
+  switch (cmpTab) {
+    case 'concentration': renderCmpConc(sel);    break;
+    case 'top10':         renderCmpTop10(sel);   break;
+    case 'overlap':       renderCmpOverlap(sel); break;
+    case 'sector':        renderCmpSector(sel);  break;
+  }
+}
+
+/* ── Tab 1: Concentration ───────────────────────────────────────────────── */
+function renderCmpConc(sel) {
+  const ms = sel.map(code => {
+    const h    = cmpCache[code] || [];
+    const etf  = COMPARE_ETF_LIST.find(e => e.code === code);
+    const top5 = h.slice(0,5).reduce((s,x)=>s+(x.weight||0),0);
+    const top10= h.slice(0,10).reduce((s,x)=>s+(x.weight||0),0);
+    const heavy= h.filter(x=>x.weight>=5).length;
+    return { code, label: etf?.name||code, top5, top10, heavy, count: h.length };
+  });
+
+  function block(title, key, max, unit='%') {
+    const fmt2 = v => typeof v==='number' ? v.toFixed(unit==='%'?2:0)+unit : v;
+    return `<div class="cmp-block">
+      <div class="cmp-block-title">${title}</div>
+      ${ms.map(m=>`
+        <div class="cmp-bar-row">
+          <div class="cmp-bar-etf" title="${m.label}">${m.code}</div>
+          <div class="cmp-bar-track">
+            <div class="cmp-bar-fill" data-w="${max?((m[key]/max)*100).toFixed(1):0}"
+                 style="background:${cmpColor(m.code)}"></div>
+          </div>
+          <div class="cmp-bar-val" style="color:${cmpColor(m.code)}">${fmt2(m[key])}</div>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  const maxT5  = Math.max(...ms.map(m=>m.top5),1);
+  const maxT10 = Math.max(...ms.map(m=>m.top10),1);
+  const maxH   = Math.max(...ms.map(m=>m.heavy),1);
+  const maxC   = Math.max(...ms.map(m=>m.count),1);
+
+  document.getElementById('cmp-body').innerHTML =
+    block('前五大持股合計 TOP5 WEIGHT',     'top5',  maxT5)  +
+    block('前十大持股合計 TOP10 WEIGHT',    'top10', maxT10) +
+    block('重倉檔數（≥5%） HEAVY ≥5%',     'heavy', maxH,  '檔') +
+    block('總持股檔數 TOTAL HOLDINGS',      'count', maxC,  '檔');
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#cmp-body .cmp-bar-fill[data-w]').forEach(el => {
+      setTimeout(() => { el.style.width = el.dataset.w + '%'; }, 60);
+    });
+  });
+}
+
+/* ── Tab 2: Top 10 holdings ─────────────────────────────────────────────── */
+function renderCmpTop10(sel) {
+  const map = {};
+  sel.forEach(code => {
+    (cmpCache[code]||[]).slice(0,10).forEach(h => {
+      if (!map[h.code]) map[h.code] = { code:h.code, name:h.name, etfs:{} };
+      map[h.code].etfs[code] = h.weight;
+    });
+  });
+
+  const stocks = Object.values(map)
+    .sort((a,b) => Math.max(...Object.values(b.etfs)) - Math.max(...Object.values(a.etfs)))
+    .slice(0, 25);
+
+  if (!stocks.length) {
+    document.getElementById('cmp-body').innerHTML = '<div class="cmp-empty">無資料</div>'; return;
+  }
+
+  const hdr = `<div style="display:flex;align-items:center;gap:10px;padding:0 8px 8px;font-size:10px;letter-spacing:2px;color:var(--text);opacity:.4">
+    <span style="width:22px"></span>
+    <span style="flex:1">名稱</span>
+    ${sel.map(c=>`<span style="width:32px;text-align:center;color:${cmpColor(c)};opacity:1">${c.replace('009','').replace('00','')}</span>`).join('')}
+  </div>`;
+
+  document.getElementById('cmp-body').innerHTML = hdr + stocks.map((s,i) => `
+    <div class="cmp-top-row">
+      <div class="cmp-top-rank">#${String(i+1).padStart(2,'0')}</div>
+      <div class="cmp-top-info">
+        <div class="cmp-top-code">${s.code}</div>
+        <div class="cmp-top-name">${s.name}</div>
+      </div>
+      <div class="cmp-top-dots">
+        ${sel.map(code => {
+          const w = s.etfs[code];
+          const c = cmpColor(code);
+          return w!=null
+            ? `<div class="cmp-top-dot" style="border-color:${c};color:${c}">${w.toFixed(1)}</div>`
+            : `<div class="cmp-top-dot" style="border-color:rgba(255,255,255,.08);color:rgba(255,255,255,.18)">──</div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+/* ── Tab 3: Overlap analysis ────────────────────────────────────────────── */
+function renderCmpOverlap(sel) {
+  if (sel.length < 2) {
+    document.getElementById('cmp-body').innerHTML =
+      '<div class="cmp-empty">至少選 2 個 ETF 才能分析重疊</div>'; return;
+  }
+
+  const map = {};
+  sel.forEach(code => {
+    (cmpCache[code]||[]).forEach(h => {
+      if (!map[h.code]) map[h.code] = { code:h.code, name:h.name, etfs:{} };
+      map[h.code].etfs[code] = h.weight;
+    });
+  });
+
+  const overlapping = Object.values(map)
+    .filter(s => Object.keys(s.etfs).length >= 2)
+    .sort((a,b) =>
+      Object.keys(b.etfs).length - Object.keys(a.etfs).length ||
+      Math.max(...Object.values(b.etfs)) - Math.max(...Object.values(a.etfs))
+    );
+
+  if (!overlapping.length) {
+    document.getElementById('cmp-body').innerHTML =
+      '<div class="cmp-empty">選定的 ETF 之間無持股重疊</div>'; return;
+  }
+
+  document.getElementById('cmp-body').innerHTML =
+    `<div style="font-size:11px;color:var(--text);opacity:.5;margin-bottom:12px">
+       共 <span style="color:var(--cyan)">${overlapping.length}</span> 檔出現在 2 個以上的 ETF
+     </div>` +
+    overlapping.map(s => `
+      <div class="cmp-overlap-item">
+        <div class="cmp-overlap-stock">
+          <div class="cmp-overlap-code">${s.code}</div>
+          <div class="cmp-overlap-name">${s.name}</div>
+        </div>
+        <div class="cmp-overlap-badges">
+          ${Object.entries(s.etfs).map(([code,w])=>`
+            <div class="cmp-overlap-badge" style="border-color:${cmpColor(code)};color:${cmpColor(code)}">
+              ${code} ${w.toFixed(2)}%
+            </div>`).join('')}
+        </div>
+      </div>`).join('');
+}
+
+/* ── Tab 4: Sector distribution ─────────────────────────────────────────── */
+function renderCmpSector(sel) {
+  const allSec = new Set();
+  const byEtf  = {};
+  sel.forEach(code => {
+    const m = {};
+    (cmpCache[code]||[]).forEach(h => {
+      const s = h.sector||'其他'; m[s]=(m[s]||0)+(h.weight||0); allSec.add(s);
+    });
+    const tot = Object.values(m).reduce((s,v)=>s+v,0);
+    byEtf[code] = { m, tot };
+  });
+
+  const sectors = [...allSec].sort((a,b) => {
+    const aM = Math.max(...sel.map(c=>byEtf[c]?.m[a]||0));
+    const bM = Math.max(...sel.map(c=>byEtf[c]?.m[b]||0));
+    return bM - aM;
+  });
+
+  document.getElementById('cmp-body').innerHTML = sectors.map(sec => `
+    <div class="cmp-block" style="margin-bottom:10px">
+      <div class="cmp-block-title">${sec}</div>
+      ${sel.map(code => {
+        const d   = byEtf[code];
+        const pct = d?.tot ? ((d.m[sec]||0)/d.tot*100) : 0;
+        const col = cmpColor(code);
+        return `<div class="cmp-bar-row">
+          <div class="cmp-bar-etf">${code}</div>
+          <div class="cmp-bar-track">
+            <div class="cmp-bar-fill" data-w="${pct.toFixed(1)}" style="background:${col}"></div>
+          </div>
+          <div class="cmp-bar-val" style="color:${col}">${pct.toFixed(1)}%</div>
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#cmp-body .cmp-bar-fill[data-w]').forEach(el => {
+      setTimeout(() => { el.style.width = el.dataset.w + '%'; }, 80);
+    });
+  });
+}
 
 /* ── Init ───────────────────────────────────────────────────────────────── */
 async function init() {
