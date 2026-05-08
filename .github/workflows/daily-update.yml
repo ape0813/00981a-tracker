@@ -132,25 +132,33 @@ jobs:
               def etf_name(code): return ETF_NAMES.get(code, code)
 
               lines.append("\n【持股重疊異動】")
+              def ov_zhang(s):
+                  sh = (s.get("shares_by_etf") or {}).get("00981A")
+                  if not sh:
+                      return ""
+                  zhang = sh // 1000
+                  return f"  {zhang:,} 張" if zhang else ""
+
               if ov_new:
                   lines.append(f"🟢 新增重疊 {len(ov_new)} 檔")
                   for s in ov_new[:5]:
                       etfs = "、".join(etf_name(c) for c in s["etfs"] if c != "00981A")
-                      lines.append(f"  {s['name']}（{s['code']}）與 {etfs}")
+                      lines.append(f"  {s['name']}（{s['code']}）{ov_zhang(s)}  與 {etfs}")
               if ov_removed:
                   lines.append(f"🔴 移除重疊 {len(ov_removed)} 檔")
                   for s in ov_removed[:5]:
                       etfs = "、".join(etf_name(c) for c in s["etfs"] if c != "00981A")
-                      lines.append(f"  {s['name']}（{s['code']}）不再與 {etfs}")
+                      lines.append(f"  {s['name']}（{s['code']}）{ov_zhang(s)}  不再與 {etfs}")
               if ov_changed:
                   lines.append(f"🔵 重疊組合變化 {len(ov_changed)} 檔")
                   for s in ov_changed[:3]:
+                      zh = ov_zhang(s)
                       if s.get("added_etfs"):
                           a = "、".join(etf_name(c) for c in s["added_etfs"])
-                          lines.append(f"  {s['name']} ＋{a}")
+                          lines.append(f"  {s['name']}{zh} ＋{a}")
                       if s.get("removed_etfs"):
                           r = "、".join(etf_name(c) for c in s["removed_etfs"])
-                          lines.append(f"  {s['name']} －{r}")
+                          lines.append(f"  {s['name']}{zh} －{r}")
 
           payload = json.dumps({
               "to": os.environ["LINE_USER_ID"],
