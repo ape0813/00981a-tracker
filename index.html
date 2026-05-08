@@ -628,6 +628,112 @@ footer {
   .h-change    { display: none; }
   .wrap { padding: 16px 14px 40px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NEW FEATURES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── AI Summary ────────────────────────────────────────────────────────── */
+.ai-summary {
+  background: rgba(255,0,255,.025);
+  border: 1px solid rgba(255,0,255,.2);
+  border-left: 3px solid var(--magenta);
+  padding: 18px 24px 20px;
+  margin-bottom: 36px;
+  position: relative;
+}
+.ai-summary-hd {
+  font-size: 11px; letter-spacing: 4px; color: var(--magenta);
+  text-transform: uppercase; margin-bottom: 12px;
+  display: flex; align-items: center; gap: 10px;
+  text-shadow: 0 0 8px var(--magenta);
+}
+.ai-summary-body {
+  color: var(--bright); font-size: 14px; line-height: 2;
+}
+.ai-hi  { color: var(--cyan);   font-weight: 600; text-shadow: 0 0 6px rgba(0,255,249,.4); }
+.ai-pos { color: var(--green);  font-weight: 600; }
+.ai-neg { color: var(--red);    font-weight: 600; }
+.ai-sec { color: var(--yellow); font-weight: 600; }
+
+/* ── Heatmap ───────────────────────────────────────────────────────────── */
+.heatmap-container {
+  width: 100%; height: 340px;
+  position: relative;
+  border: 1px solid var(--border);
+  background: #02020b;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.heatmap-cell {
+  position: absolute;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  transition: filter .12s;
+  user-select: none;
+}
+.heatmap-cell:hover { filter: brightness(1.45); z-index: 20; }
+.hm-code   { font-family: var(--font-num); font-size: 10px; opacity: .7; line-height: 1.3; }
+.hm-name   { font-size: 13px; font-weight: 600; text-align: center; padding: 0 4px; line-height: 1.3; }
+.hm-weight { font-family: var(--font-num); font-size: 11px; opacity: .75; }
+
+.hm-legend {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  font-size: 11px; letter-spacing: 1px; margin-top: 6px; margin-bottom: 4px;
+}
+
+.hm-tooltip {
+  position: fixed;
+  background: rgba(7,7,26,.97);
+  border: 1px solid var(--cyan);
+  box-shadow: 0 0 20px rgba(0,255,249,.2);
+  padding: 10px 14px; font-size: 13px;
+  z-index: 5000; pointer-events: none;
+  opacity: 0; transition: opacity .1s;
+  min-width: 160px;
+}
+.hm-tooltip.show { opacity: 1; }
+.hm-tt-code   { font-family: var(--font-num); font-size: 11px; color: var(--cyan); opacity: .7; }
+.hm-tt-name   { font-size: 15px; color: var(--bright); margin: 4px 0; }
+.hm-tt-weight { font-family: var(--font-num); font-size: 14px; color: var(--cyan); }
+.hm-tt-change { font-size: 12px; margin-top: 4px; }
+.hm-tt-sector { font-size: 11px; color: var(--text); opacity: .55; margin-top: 4px; }
+
+/* ── Sector Donut ──────────────────────────────────────────────────────── */
+.sector-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.donut-wrap {
+  position: relative;
+  width: 220px; height: 220px;
+  flex-shrink: 0;
+}
+#donut-svg { display: block; }
+.donut-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center; pointer-events: none;
+  width: 100px;
+}
+.donut-center-val {
+  font-family: var(--font-num); font-size: 17px;
+  color: var(--magenta); text-shadow: 0 0 10px var(--magenta);
+  line-height: 1.2;
+}
+.donut-center-lbl {
+  font-size: 10px; color: var(--text); opacity: .5;
+  letter-spacing: 2px; margin-top: 3px; text-transform: uppercase;
+}
+.donut-slice { cursor: pointer; transition: opacity .15s; }
+@media (max-width: 720px) {
+  .sector-layout { grid-template-columns: 1fr; }
+  .donut-wrap { margin: 0 auto 16px; }
+}
 </style>
 </head>
 <body>
@@ -635,6 +741,15 @@ footer {
 <div id="grid-bg"></div>
 <div id="scanlines"></div>
 <div id="beam"></div>
+
+<!-- Heatmap tooltip (fixed, outside wrap) -->
+<div class="hm-tooltip" id="hm-tooltip">
+  <div class="hm-tt-code"   id="hm-tt-code"></div>
+  <div class="hm-tt-name"   id="hm-tt-name"></div>
+  <div class="hm-tt-weight" id="hm-tt-weight"></div>
+  <div class="hm-tt-change" id="hm-tt-change"></div>
+  <div class="hm-tt-sector" id="hm-tt-sector"></div>
+</div>
 
 <!-- ── Modal ── -->
 <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true">
@@ -692,6 +807,29 @@ footer {
     </div>
   </div>
 
+  <!-- ── AI Summary ── -->
+  <div class="ai-summary" id="ai-summary" style="display:none">
+    <div class="ai-summary-hd">▸ NEURAL ANALYSIS // AI 摘要</div>
+    <div class="ai-summary-body" id="ai-summary-text"></div>
+  </div>
+
+  <!-- ── Heatmap ── -->
+  <div class="section">
+    <div class="section-hd">
+      <div class="section-title">HEATMAP // 熱力圖</div>
+      <div class="section-rule"></div>
+      <div class="section-tag" style="opacity:.4;font-size:11px">大小＝比例 · 色彩＝異動</div>
+    </div>
+    <div class="heatmap-container" id="heatmap-container"></div>
+    <div class="hm-legend">
+      <span style="color:var(--green)">■ 新增建倉</span>
+      <span style="color:var(--red)">■ 完全清倉</span>
+      <span style="color:var(--cyan)">■ 加碼</span>
+      <span style="color:var(--orange)">■ 減碼</span>
+      <span style="color:var(--text);opacity:.45">■ 無異動</span>
+    </div>
+  </div>
+
   <!-- ── Holdings ── -->
   <div class="section">
     <div class="section-hd">
@@ -737,7 +875,16 @@ footer {
       <div class="section-rule"></div>
       <div class="section-tag" style="opacity:.4;font-size:11px">點擊篩選持股</div>
     </div>
-    <div class="sector-grid" id="sector-grid"></div>
+    <div class="sector-layout">
+      <div class="donut-wrap">
+        <svg id="donut-svg" width="220" height="220" viewBox="0 0 220 220"></svg>
+        <div class="donut-center">
+          <div class="donut-center-val" id="donut-val">──</div>
+          <div class="donut-center-lbl" id="donut-lbl">SECTOR</div>
+        </div>
+      </div>
+      <div class="sector-grid" id="sector-grid"></div>
+    </div>
   </div>
 
   <footer>
@@ -753,12 +900,12 @@ footer {
 
 /* ── State ──────────────────────────────────────────────────────────────── */
 let currentData   = null;
-let holdingsCache = [];    // raw sorted list from JSON
-let changeMap     = {};    // code → 'added'|'removed'|'increased'|'decreased'
+let holdingsCache = [];
+let changeMap     = {};
 let sortConfig    = { key: 'weight', dir: 'desc' };
 let currentDate   = '';
 let searchFilter  = '';
-let sectorFilter  = null;  // null = no filter, string = active sector name
+let sectorFilter  = null;
 
 /* ── Utilities ──────────────────────────────────────────────────────────── */
 const fmt = (n, d = 2) =>
@@ -899,6 +1046,170 @@ function renderMetrics(data) {
       ${c.unit ? `<div class="metric-sub">${c.unit}</div>` : ''}
     </div>
   `).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NEW: AI SUMMARY
+   ══════════════════════════════════════════════════════════════════════════ */
+function renderAISummary(data) {
+  const h  = data.holdings || [];
+  const ch = data.changes  || {};
+  if (!h.length) return;
+
+  const total    = h.reduce((s, x) => s + (x.weight || 0), 0);
+  const top5     = h.slice(0, 5);
+  const top5w    = top5.reduce((s, x) => s + (x.weight || 0), 0);
+  const heavyCnt = h.filter(x => x.weight >= 5).length;
+
+  const secMap = {};
+  for (const x of h) {
+    const s = x.sector || '其他';
+    secMap[s] = (secMap[s] || 0) + (x.weight || 0);
+  }
+  const topSec = Object.entries(secMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+  const added   = (ch.added    || []).length;
+  const removed = (ch.removed  || []).length;
+  const inc     = (ch.increased|| []).length;
+  const dec     = (ch.decreased|| []).length;
+  const totalCh = added + removed + inc + dec;
+
+  const top5html = top5.map(x => `<span class="ai-hi">${x.name}</span>`).join('、');
+  const secHtml  = topSec.map(([s, p]) =>
+    `<span class="ai-sec">${s}</span>&thinsp;<span class="ai-hi">${p.toFixed(1)}%</span>`
+  ).join('、');
+
+  let chHtml;
+  if (totalCh === 0) {
+    chHtml = '本期<span class="ai-hi">無持股異動</span>。';
+  } else {
+    const parts = [];
+    if (added)   parts.push(`<span class="ai-pos">▲ 新增 ${added} 檔</span>`);
+    if (removed) parts.push(`<span class="ai-neg">✕ 清倉 ${removed} 檔</span>`);
+    if (inc)     parts.push(`<span class="ai-pos">↑ 加碼 ${inc} 檔</span>`);
+    if (dec)     parts.push(`<span class="ai-neg">↓ 減碼 ${dec} 檔</span>`);
+    chHtml = `本期異動 <span class="ai-hi">${totalCh} 筆</span>：${parts.join('&emsp;')}。`;
+  }
+
+  document.getElementById('ai-summary-text').innerHTML =
+    `本期持股共 <span class="ai-hi">${h.length} 檔</span>，` +
+    `總持股比例 <span class="ai-hi">${total.toFixed(2)}%</span>。` +
+    `前五大為 ${top5html}，合計佔 <span class="ai-hi">${top5w.toFixed(2)}%</span>` +
+    (heavyCnt ? `，其中 <span class="ai-hi">${heavyCnt} 檔</span>持股逾 5%` : '') +
+    `。產業集中於 ${secHtml}。${chHtml}`;
+
+  document.getElementById('ai-summary').style.display = '';
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NEW: HEATMAP (TREEMAP)
+   ══════════════════════════════════════════════════════════════════════════ */
+const HM_COLORS = {
+  added:     { bg:'rgba(0,255,65,.18)',   bd:'rgba(0,255,65,.65)',   fg:'#00ff41' },
+  removed:   { bg:'rgba(255,49,49,.18)',  bd:'rgba(255,49,49,.65)',  fg:'#ff3131' },
+  increased: { bg:'rgba(0,255,249,.13)',  bd:'rgba(0,255,249,.65)',  fg:'#00fff9' },
+  decreased: { bg:'rgba(255,140,0,.14)',  bd:'rgba(255,140,0,.65)',  fg:'#ff8c00' },
+  unchanged: { bg:'rgba(0,255,249,.04)',  bd:'rgba(0,255,249,.16)',  fg:'#5a6480' },
+};
+
+function computeTreemap(items, x, y, w, h) {
+  if (!items.length) return [];
+  if (items.length === 1) return [{ ...items[0], x, y, w, h }];
+  const total = items.reduce((s, i) => s + i.weight, 0);
+  let acc = 0, cut = 0;
+  for (let i = 0; i < items.length - 1; i++) {
+    acc += items[i].weight;
+    cut = i;
+    if (acc >= total / 2) break;
+  }
+  const left  = items.slice(0, cut + 1);
+  const right = items.slice(cut + 1);
+  const ratio = left.reduce((s, i) => s + i.weight, 0) / total;
+  if (w >= h) {
+    const sw = w * ratio;
+    return [
+      ...computeTreemap(left,  x,      y, sw,     h),
+      ...computeTreemap(right, x + sw, y, w - sw, h),
+    ];
+  } else {
+    const sh = h * ratio;
+    return [
+      ...computeTreemap(left,  x, y,      w, sh),
+      ...computeTreemap(right, x, y + sh, w, h - sh),
+    ];
+  }
+}
+
+function moveTooltip(e) {
+  const tt = document.getElementById('hm-tooltip');
+  const off = 14;
+  let lx = e.clientX + off;
+  let ty = e.clientY + off;
+  if (lx + 185 > window.innerWidth)  lx = e.clientX - 185 - off;
+  if (ty + 130 > window.innerHeight) ty = e.clientY - 130 - off;
+  tt.style.left = lx + 'px';
+  tt.style.top  = ty + 'px';
+}
+
+function renderHeatmap(holdings) {
+  const cont = document.getElementById('heatmap-container');
+  cont.innerHTML = '';
+  if (!holdings.length) return;
+
+  const W   = cont.offsetWidth  || 900;
+  const H   = cont.offsetHeight || 340;
+  const PAD = 2;
+
+  const sorted = [...holdings].sort((a, b) => b.weight - a.weight);
+  const cells  = computeTreemap(sorted, 0, 0, W, H);
+
+  cells.forEach(cell => {
+    const type   = changeMap[cell.code] || 'unchanged';
+    const colors = HM_COLORS[type];
+    const cw = Math.max(cell.w - PAD * 2, 2);
+    const ch = Math.max(cell.h - PAD * 2, 2);
+    const showName = cw > 36 && ch > 18;
+    const showCode = cw > 52 && ch > 28;
+    const showWt   = ch > 48;
+
+    const el = document.createElement('div');
+    el.className = 'heatmap-cell';
+    el.style.cssText =
+      `left:${cell.x + PAD}px;top:${cell.y + PAD}px;` +
+      `width:${cw}px;height:${ch}px;` +
+      `background:${colors.bg};border:1px solid ${colors.bd};color:${colors.fg};`;
+
+    if (showName) {
+      const fs = Math.max(9, Math.min(13, cw / 7));
+      el.innerHTML =
+        (showCode ? `<div class="hm-code">${cell.code}</div>` : '') +
+        `<div class="hm-name" style="font-size:${fs}px">${cell.name}</div>` +
+        (showWt ? `<div class="hm-weight">${cell.weight.toFixed(2)}%</div>` : '');
+    }
+
+    el.addEventListener('mouseenter', e => {
+      const tt    = document.getElementById('hm-tooltip');
+      const delta = cell.change || 0;
+      const sign  = delta > 0 ? '+' : '';
+      const chCls = delta > 0.005 ? 'color:var(--green)'
+                  : delta < -0.005 ? 'color:var(--red)' : 'opacity:.4';
+      const chTxt = Math.abs(delta) < 0.005 ? '——' : `${sign}${delta.toFixed(2)}%`;
+      document.getElementById('hm-tt-code').textContent   = cell.code;
+      document.getElementById('hm-tt-name').textContent   = cell.name;
+      document.getElementById('hm-tt-weight').textContent = cell.weight.toFixed(2) + '%';
+      document.getElementById('hm-tt-change').innerHTML   = `<span style="${chCls}">${chTxt}</span>`;
+      document.getElementById('hm-tt-sector').textContent = cell.sector || '——';
+      tt.classList.add('show');
+      moveTooltip(e);
+    });
+    el.addEventListener('mousemove', moveTooltip);
+    el.addEventListener('mouseleave', () => {
+      document.getElementById('hm-tooltip').classList.remove('show');
+    });
+    el.addEventListener('click', () => openModal(cell.code, holdingsCache));
+
+    cont.appendChild(el);
+  });
 }
 
 /* ── Holdings ───────────────────────────────────────────────────────────── */
@@ -1054,6 +1365,89 @@ function renderSectors(holdings) {
   });
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   NEW: DONUT CHART
+   ══════════════════════════════════════════════════════════════════════════ */
+const DONUT_PALETTE = [
+  '#ff00ff','#00fff9','#00ff41','#ffe600',
+  '#ff8c00','#a06fff','#ff6eb0','#5ad3ff',
+];
+
+function renderDonut(holdings) {
+  const svg = document.getElementById('donut-svg');
+  if (!svg) return;
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  const secMap = {};
+  for (const h of holdings) {
+    const s = h.sector || '其他';
+    secMap[s] = (secMap[s] || 0) + (h.weight || 0);
+  }
+  const sectors = Object.entries(secMap).sort((a, b) => b[1] - a[1]);
+  const total   = sectors.reduce((s, [, v]) => s + v, 0);
+  if (!total) return;
+
+  const cx = 110, cy = 110, ro = 96, ri = 60;
+  let angle = -Math.PI / 2;
+
+  sectors.forEach(([name, val], i) => {
+    const slice = (val / total) * Math.PI * 2;
+    const ea    = angle + slice;
+    const large = slice > Math.PI ? 1 : 0;
+    const cos0 = Math.cos(angle), sin0 = Math.sin(angle);
+    const cosE = Math.cos(ea),    sinE = Math.sin(ea);
+    const color = DONUT_PALETTE[i % DONUT_PALETTE.length];
+
+    const d = [
+      `M ${(cx + ri * cos0).toFixed(2)} ${(cy + ri * sin0).toFixed(2)}`,
+      `L ${(cx + ro * cos0).toFixed(2)} ${(cy + ro * sin0).toFixed(2)}`,
+      `A ${ro} ${ro} 0 ${large} 1 ${(cx + ro * cosE).toFixed(2)} ${(cy + ro * sinE).toFixed(2)}`,
+      `L ${(cx + ri * cosE).toFixed(2)} ${(cy + ri * sinE).toFixed(2)}`,
+      `A ${ri} ${ri} 0 ${large} 0 ${(cx + ri * cos0).toFixed(2)} ${(cy + ri * sin0).toFixed(2)}`,
+      'Z',
+    ].join(' ');
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', color);
+    path.setAttribute('opacity', '0.72');
+    path.setAttribute('stroke', 'rgba(4,4,15,.7)');
+    path.setAttribute('stroke-width', '1.5');
+    path.classList.add('donut-slice');
+
+    path.addEventListener('mouseenter', () => {
+      path.setAttribute('opacity', '1');
+      document.getElementById('donut-val').textContent = val.toFixed(2) + '%';
+      document.getElementById('donut-lbl').textContent = name;
+      /* sync highlight in sector-grid */
+      document.querySelectorAll('.sector-item').forEach(s => {
+        s.style.boxShadow = s.dataset.sector === name
+          ? `0 0 14px ${color}55` : '';
+      });
+    });
+    path.addEventListener('mouseleave', () => {
+      path.setAttribute('opacity', '0.72');
+      document.getElementById('donut-val').textContent = '──';
+      document.getElementById('donut-lbl').textContent = 'SECTOR';
+      document.querySelectorAll('.sector-item').forEach(s => { s.style.boxShadow = ''; });
+    });
+    path.addEventListener('click', () => {
+      sectorFilter = sectorFilter === name ? null : name;
+      document.querySelectorAll('.sector-item').forEach(s => {
+        s.classList.toggle('active', s.dataset.sector === sectorFilter);
+      });
+      updateFilterStatus();
+      renderHoldings(holdingsCache);
+      if (sectorFilter) {
+        document.getElementById('holdings-list').scrollIntoView({ behavior:'smooth', block:'start' });
+      }
+    });
+
+    svg.appendChild(path);
+    angle = ea;
+  });
+}
+
 /* ── Modal ──────────────────────────────────────────────────────────────── */
 function openModal(code, sorted) {
   const idx = sorted.findIndex(h => h.code === code);
@@ -1099,7 +1493,6 @@ document.getElementById('copy-btn').addEventListener('click', () => {
     btn.classList.add('copied');
     setTimeout(() => { btn.innerHTML = '⧉ 複製'; btn.classList.remove('copied'); }, 2000);
   }).catch(() => {
-    /* fallback for environments without clipboard API */
     const ta = document.createElement('textarea');
     ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select();
@@ -1176,17 +1569,21 @@ function renderAll(data) {
   document.getElementById('data-date').textContent = data.date || '——';
 
   renderMetrics(data);
+  renderAISummary(data);
   renderHoldings(holdingsCache);
   renderChanges(data.changes || {});
   renderSectors(holdingsCache);
+  renderDonut(holdingsCache);
   updateSortUI();
+
+  /* heatmap needs layout to settle first */
+  requestAnimationFrame(() => renderHeatmap(holdingsCache));
 }
 
 async function loadAndRender(dateStr) {
   currentDate = dateStr;
   updateDateNav();
 
-  /* Reset filters on date change */
   searchFilter  = '';
   sectorFilter  = null;
   document.getElementById('search-input').value = '';
@@ -1196,6 +1593,10 @@ async function loadAndRender(dateStr) {
   document.getElementById('holdings-list').innerHTML = '';
   document.getElementById('changes-grid').innerHTML  = '';
   document.getElementById('sector-grid').innerHTML   = '';
+  document.getElementById('heatmap-container').innerHTML = '';
+  document.getElementById('ai-summary').style.display = 'none';
+  const dsvg = document.getElementById('donut-svg');
+  while (dsvg.firstChild) dsvg.removeChild(dsvg.firstChild);
 
   const data = await loadDate(dateStr);
   if (!data) {
@@ -1205,6 +1606,15 @@ async function loadAndRender(dateStr) {
   }
   renderAll(data);
 }
+
+/* ── Resize: re-render heatmap ──────────────────────────────────────────── */
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    if (holdingsCache.length) renderHeatmap(holdingsCache);
+  }, 220);
+});
 
 /* ── Init ───────────────────────────────────────────────────────────────── */
 async function init() {
