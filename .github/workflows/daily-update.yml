@@ -105,3 +105,76 @@ jobs:
           urllib.request.urlopen(req)
           print("LINE message sent!")
           PYEOF
+
+      - name: Notify LINE on overlap changes
+        if: env.LINE_CHANNEL_TOKEN != ''
+        env:
+          LINE_CHANNEL_TOKEN: ${{ secrets.LINE_CHANNEL_TOKEN }}
+          LINE_USER_ID:       ${{ secrets.LINE_USER_ID }}
+        run: |
+          python - << 'PYEOF'
+          import json, os, urllib.request, sys
+          from pathlib import Path
+
+          overlap_file = Path("data/overlap.json")
+          if not overlap_file.exists():
+              print("No overlap.json — skipping")
+              sys.exit(0)
+
+          data = json.loads(overlap_file.read_text(encoding="utf-8"))
+          ch   = data.get("changes", {})
+          new_ov     = ch.get("new",     [])
+          removed_ov = ch.get("removed", [])
+          changed_ov = ch.get("changed", [])
+
+          if not (new_ov or removed_ov or changed_ov):
+              print("No overlap changes — skipping")
+              sys.exit(0)
+
+          ETF_NAMES = {
+              "00981A": "中信半導體正2", "00891": "中信關鍵半導體",
+              "00892":  "富邦台灣半導體", "00982A": "富邦半導體正2",
+              "0050":   "元大台灣50",    "0056":  "元大高股息",
+              "00919":  "群益精選高息",
+          }
+          def etf_name(code): return ETF_NAMES.get(code, code)
+
+          lines = [f"🔗 ETF 持股重疊異動（{data.get('date', '?')}）"]
+
+          if new_ov:
+              lines.append(f"\n🟢 新增重疊（共 {len(new_ov)} 檔）")
+              for s in new_ov[:8]:
+                  etfs = "、".join(etf_name(c) for c in s["etfs"] if c != "00981A")
+                  lines.append(f"  {s['name']}（{s['code']}）← 與 {etfs} 同時持有")
+
+          if removed_ov:
+              lines.append(f"\n🔴 移除重疊（共 {len(removed_ov)} 檔）")
+              for s in removed_ov[:8]:
+                  etfs = "、".join(etf_name(c) for c in s["etfs"] if c != "00981A")
+                  lines.append(f"  {s['name']}（{s['code']}）← 不再與 {etfs} 重疊")
+
+          if changed_ov:
+              lines.append(f"\n🔵 重疊組合變化（共 {len(changed_ov)} 檔）")
+              for s in changed_ov[:5]:
+                  if s.get("added_etfs"):
+                      a = "、".join(etf_name(c) for c in s["added_etfs"])
+                      lines.append(f"  {s['name']} ＋{a}")
+                  if s.get("removed_etfs"):
+                      r = "、".join(etf_name(c) for c in s["removed_etfs"])
+                      lines.append(f"  {s['name']} －{r}")
+
+          payload = json.dumps({
+              "to": os.environ["LINE_USER_ID"],
+              "messages": [{"type": "text", "text": "\n".join(lines)}],
+          }).encode()
+          req = urllib.request.Request(
+              "https://api.line.me/v2/bot/message/push",
+              data=payload,
+              headers={
+                  "Authorization": f"Bearer {os.environ['LINE_CHANNEL_TOKEN']}",
+                  "Content-Type": "application/json",
+              },
+          )
+          urllib.request.urlopen(req)
+          print("Overlap LINE message sent!")
+          PYEOF

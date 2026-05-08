@@ -29,9 +29,21 @@ ETF_CODE      = "00981A"
 ETF_BASE_CODE = "00981"
 DATA_DIR      = Path("data")
 HOLDINGS_FILE = DATA_DIR / "holdings.json"
+COMPARE_DIR   = DATA_DIR / "compare"
+OVERLAP_FILE  = DATA_DIR / "overlap.json"
 TIMEOUT       = 30
 RETRIES       = 3
 RETRY_DELAY   = 5  # seconds between retries
+
+# ETFs to compare against 00981A for overlap analysis
+COMPARISON_ETFS: dict[str, str] = {
+    "00891":  "中信關鍵半導體",
+    "00892":  "富邦台灣半導體",
+    "00982A": "富邦半導體正2",
+    "0050":   "元大台灣50",
+    "0056":   "元大高股息",
+    "00919":  "群益精選高息",
+}
 
 logging.basicConfig(
     level=logging.INFO,
@@ -365,6 +377,149 @@ def detect_changes(current: list[dict], previous: Optional[dict]) -> dict:
     }
 
 
+# ── Comparison ETF fetching ───────────────────────────────────────────────────
+
+def fetch_all_etf_components() -> Optional[list[dict]]:
+    """Fetch the full TWSE ETF component table (all ETFs in one call)."""
+    session = make_session()
+    url = "https://openapi.twse.com.tw/v1/ETFdividend/ETFcomponent"
+    log.info("Fetching TWSE all-ETF components: %s", url)
+    resp = get(session, url)
+    if not resp:
+        return None
+    try:
+        return resp.json()
+    except Exception as exc:
+        log.warning("All-ETF parse error: %s", exc)
+        return None
+
+
+def parse_etf_from_all(all_rows: list[dict], etf_code: str) -> Optional[list[dict]]:
+    """Filter and parse holdings for a specific ETF from the all-ETF table."""
+    rows = [
+        x for x in all_rows
+        if (x.get("ETFcode") or x.get("etfCode") or x.get("ETFCode") or "") == etf_code
+    ]
+    if not rows:
+        return None
+    holdings = []
+    for x in rows:
+        code   = str(x.get("Code",  x.get("code",  ""))).strip()
+        name   = str(x.get("Name",  x.get("name",  ""))).strip()
+        weight = float(x.get("Ratio", x.get("ratio", x.get("Percent", 0))))
+        if code and name and weight > 0:
+            holdings.append({
+                "code": code, "name": name,
+                "weight": round(weight, 4),
+                "sector": infer_sector(code),
+            })
+    return sorted(holdings, key=lambda x: x["weight"], reverse=True) if holdings else None
+
+
+def save_compare(etf_code: str, etf_name: str, holdings: list[dict]) -> None:
+    COMPARE_DIR.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps({
+        "code": etf_code, "name": etf_name,
+        "date": date.today().isoformat(),
+        "fetched_at": datetime.now().isoformat(),
+        "holdings": holdings,
+    }, ensure_ascii=False, indent=2)
+    (COMPARE_DIR / f"{etf_code}.json").write_text(payload, encoding="utf-8")
+    log.info("Saved compare/%s.json (%d holdings)", etf_code, len(holdings))
+
+
+def load_compare(etf_code: str) -> Optional[list[dict]]:
+    path = COMPARE_DIR / f"{etf_code}.json"
+    if path.exists():
+        try:
+            return json.loads(path.read_text(encoding="utf-8")).get("holdings", [])
+        except Exception:
+            pass
+    return None
+
+
+# ── Overlap computation ───────────────────────────────────────────────────────
+
+def compute_overlap(
+    main_holdings: list[dict],
+    compare_map: dict[str, list[dict]],
+) -> dict[str, dict]:
+    """
+    Returns stocks that appear in 00981A AND at least one comparison ETF.
+    Key = stock code, value = { code, name, etfs: { etf_code: weight } }
+    """
+    main_set = {h["code"]: h for h in main_holdings}
+    overlap: dict[str, dict] = {}
+
+    for etf_code, holdings in compare_map.items():
+        for h in holdings:
+            if h["code"] not in main_set:
+                continue
+            if h["code"] not in overlap:
+                overlap[h["code"]] = {
+                    "code":  h["code"],
+                    "name":  h["name"],
+                    "etfs":  {"00981A": round(main_set[h["code"]]["weight"], 4)},
+                }
+            overlap[h["code"]]["etfs"][etf_code] = round(h["weight"], 4)
+
+    return overlap
+
+
+def load_previous_overlap() -> Optional[dict]:
+    if OVERLAP_FILE.exists():
+        try:
+            return json.loads(OVERLAP_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return None
+
+
+def detect_overlap_changes(
+    current: dict[str, dict],
+    previous: Optional[dict],
+) -> dict:
+    """Diff current vs previous overlap; returns new / removed / changed entries."""
+    empty: dict = {"new": [], "removed": [], "changed": []}
+    if not previous or "overlap" not in previous:
+        return empty
+
+    prev = previous["overlap"]
+    changes: dict = {"new": [], "removed": [], "changed": []}
+
+    for code, entry in current.items():
+        if code not in prev:
+            changes["new"].append(entry)
+        else:
+            prev_etfs = set(prev[code]["etfs"])
+            curr_etfs = set(entry["etfs"])
+            added_etfs   = curr_etfs - prev_etfs
+            removed_etfs = prev_etfs - curr_etfs
+            if added_etfs or removed_etfs:
+                changes["changed"].append({
+                    **entry,
+                    "added_etfs":   sorted(added_etfs),
+                    "removed_etfs": sorted(removed_etfs),
+                })
+
+    for code, entry in prev.items():
+        if code not in current:
+            changes["removed"].append(entry)
+
+    return changes
+
+
+def save_overlap(overlap: dict, changes: dict) -> None:
+    payload = json.dumps({
+        "date": date.today().isoformat(),
+        "overlap": overlap,
+        "changes": changes,
+    }, ensure_ascii=False, indent=2)
+    OVERLAP_FILE.write_text(payload, encoding="utf-8")
+    total_changes = len(changes["new"]) + len(changes["removed"]) + len(changes["changed"])
+    log.info("Overlap saved: %d overlapping stocks, %d changes", len(overlap), total_changes)
+
+
 # ── Sample data (first-run fallback) ─────────────────────────────────────────
 
 def generate_sample() -> list[dict]:
@@ -437,6 +592,30 @@ def main() -> None:
         "metrics":    metrics,
         "changes":    changes,
     })
+
+    # ── Fetch comparison ETFs and compute overlap ──────────────────────────
+    log.info("Fetching comparison ETF components...")
+    all_rows = fetch_all_etf_components()
+
+    compare_map: dict[str, list[dict]] = {}
+    for etf_code, etf_name in COMPARISON_ETFS.items():
+        fetched = parse_etf_from_all(all_rows, etf_code) if all_rows else None
+        if fetched:
+            save_compare(etf_code, etf_name, fetched)
+            compare_map[etf_code] = fetched
+        else:
+            cached = load_compare(etf_code)
+            if cached:
+                compare_map[etf_code] = cached
+                log.info("Using cached data for %s", etf_code)
+            else:
+                log.warning("No data available for %s", etf_code)
+
+    prev_overlap = load_previous_overlap()
+    overlap      = compute_overlap(holdings, compare_map)
+    ov_changes   = detect_overlap_changes(overlap, prev_overlap)
+    save_overlap(overlap, ov_changes)
+
     log.info("Done.")
 
 
