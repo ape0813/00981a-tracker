@@ -497,7 +497,11 @@ def compute_overlap(
 ) -> dict[str, dict]:
     """
     Returns stocks that appear in 00981A AND at least one comparison ETF.
-    Key = stock code, value = { code, name, etfs: { etf_code: weight } }
+    Key = stock code, value = {
+        code, name,
+        etfs:       { etf_code: weight },
+        shares_by_etf: { etf_code: shares_int_or_null }
+    }
     """
     main_set = {h["code"]: h for h in main_holdings}
     overlap: dict[str, dict] = {}
@@ -506,13 +510,16 @@ def compute_overlap(
         for h in holdings:
             if h["code"] not in main_set:
                 continue
+            mh = main_set[h["code"]]
             if h["code"] not in overlap:
                 overlap[h["code"]] = {
-                    "code":  h["code"],
-                    "name":  h["name"],
-                    "etfs":  {"00981A": round(main_set[h["code"]]["weight"], 4)},
+                    "code":          h["code"],
+                    "name":          h["name"],
+                    "etfs":          {"00981A": round(mh["weight"], 4)},
+                    "shares_by_etf": {"00981A": mh.get("shares")},
                 }
-            overlap[h["code"]]["etfs"][etf_code] = round(h["weight"], 4)
+            overlap[h["code"]]["etfs"][etf_code]          = round(h["weight"], 4)
+            overlap[h["code"]]["shares_by_etf"][etf_code] = h.get("shares")
 
     return overlap
 
