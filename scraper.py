@@ -2,11 +2,8 @@
 """
 00981A ETF Holdings Scraper
 
-Data sources (in priority order):
-  1. TWSE OpenAPI  — openapi.twse.com.tw
-  2. TWSE HTML scraper — www.twse.com.tw/fund/ETF_tf.html
-  3. Fund company  — 中信投信 ctbcasset.com.tw
-  4. Previous day's data (fallback — never overwrites with empty)
+Data source:
+  MoneyDJ — www.moneydj.com (月底揭露，主動型ETF)
 
 Usage:
   python scraper.py
@@ -14,6 +11,7 @@ Usage:
 
 import json
 import logging
+import re
 import sys
 import time
 from datetime import date, datetime
@@ -578,31 +576,91 @@ def save_overlap(overlap: dict, changes: dict) -> None:
     log.info("Overlap saved: %d overlapping stocks, %d changes", len(overlap), total_changes)
 
 
+# ── MoneyDJ scraper (主動型ETF月底揭露) ───────────────────────────────────────
+
+def fetch_moneydj() -> tuple[Optional[list[dict]], Optional[str]]:
+    """
+    Scrape MoneyDJ holdings page for 00981A.
+    Returns (holdings, disclosure_date "YYYY-MM-DD") or (None, None).
+    Holdings data is updated monthly (end-of-month disclosure).
+    """
+    session = make_session()
+    url = "https://www.moneydj.com/ETF/X/Basic/Basic0007.xdjhtm?etfid=00981a.tw"
+    log.info("Trying MoneyDJ: %s", url)
+    resp = get(session, url)
+    if not resp:
+        return None, None
+    resp.encoding = resp.apparent_encoding or "utf-8"
+    try:
+        soup = BeautifulSoup(resp.text, "lxml")
+
+        # Holdings disclosure date is in sdate2 div (e.g. "資料日期：2026/03/31")
+        disclosure_date: Optional[str] = None
+        sdate2 = soup.find(id="ctl00_ctl00_MainContent_MainContent_sdate2")
+        if sdate2:
+            m = re.search(r"(\d{4}/\d{2}/\d{2})", sdate2.get_text())
+            if m:
+                disclosure_date = m.group(1).replace("/", "-")
+
+        holdings: list[dict] = []
+        for td in soup.select("td.col05"):
+            a_tag = td.find("a")
+            if not a_tag:
+                continue
+            code_m = re.search(r"etfid=(\d+[A-Z]?)\.TW", a_tag.get("href", ""), re.IGNORECASE)
+            if not code_m:
+                continue
+            code = code_m.group(1)
+            name = re.sub(r"\(\d+[A-Z]*\.TW\)$", "", a_tag.get_text(strip=True)).strip()
+
+            weight_td = td.find_next_sibling("td")
+            if not weight_td:
+                continue
+            try:
+                weight = float(weight_td.get_text(strip=True))
+            except ValueError:
+                continue
+
+            shares_td = weight_td.find_next_sibling("td")
+            shares: Optional[int] = None
+            if shares_td:
+                try:
+                    shares = int(float(shares_td.get_text(strip=True).replace(",", "")))
+                except (ValueError, TypeError):
+                    pass
+
+            holdings.append({
+                "code":   code,
+                "name":   name,
+                "weight": round(weight, 4),
+                "shares": shares,
+                "change": 0.0,
+                "sector": infer_sector(code),
+            })
+
+        if len(holdings) >= 3:
+            log.info("MoneyDJ: %d holdings, disclosure_date=%s", len(holdings), disclosure_date)
+            return holdings, disclosure_date
+    except Exception as exc:
+        log.warning("MoneyDJ parse error: %s", exc)
+    return None, None
+
+
 # ── Sample data (first-run fallback) ─────────────────────────────────────────
 
 def generate_sample() -> list[dict]:
     log.warning("Generating SAMPLE holdings — real data unavailable on first run.")
     rows = [
-        ("2330", "台積電",     22.50, "半導體"),
-        ("2454", "聯發科",      8.30, "半導體"),
-        ("2382", "廣達",        5.20, "電子"),
-        ("3711", "日月光投控",   4.80, "半導體"),
-        ("2379", "瑞昱",        4.10, "半導體"),
-        ("2303", "聯電",        3.90, "半導體"),
-        ("6770", "力積電",      3.50, "半導體"),
-        ("2344", "華邦電",      3.20, "半導體"),
-        ("3034", "聯詠",        3.00, "半導體"),
-        ("2308", "台達電",      2.80, "電子"),
-        ("2449", "京元電子",    2.60, "半導體"),
-        ("3443", "創意",        2.40, "半導體"),
-        ("6415", "矽力-KY",     2.20, "半導體"),
-        ("8046", "南電",        2.00, "半導體"),
-        ("3044", "健鼎",        1.80, "電子"),
-        ("2337", "旺宏",        1.70, "半導體"),
-        ("5347", "世界先進",    1.60, "半導體"),
-        ("2317", "鴻海",        1.50, "電子"),
-        ("2357", "華碩",        1.40, "電子"),
-        ("2392", "正崴",        1.30, "電子"),
+        ("2330", "台積電",     9.78, "半導體"),
+        ("2383", "台光電",     8.22, "電子"),
+        ("2454", "聯發科",     6.09, "半導體"),
+        ("2345", "智邦",       5.56, "電子"),
+        ("2308", "台達電",     5.44, "電子"),
+        ("3665", "貿聯-KY",    4.86, "電子"),
+        ("2368", "金像電",     4.13, "電子"),
+        ("8046", "南電",       4.06, "電子"),
+        ("6669", "緯穎",       4.00, "電子"),
+        ("6223", "旺矽",       3.88, "半導體"),
     ]
     return [
         {"code": c, "name": n, "weight": w, "change": 0.0, "sector": s}
@@ -618,22 +676,28 @@ def main() -> None:
 
     previous = load_previous()
 
-    holdings = (
-        fetch_openapi_twse()
-        or fetch_twse_html()
-        or fetch_fund_company()
-    )
+    holdings, disclosure_date = fetch_moneydj()
 
     if not holdings:
         if previous:
-            log.warning("All sources failed — preserving previous data unchanged.")
-            previous["fetch_attempted"] = datetime.now().isoformat()
-            save_data(previous)
+            # MoneyDJ 抓取失敗 — 不修改檔案，避免觸發不必要的 git diff 和通知
+            log.warning("MoneyDJ fetch failed — keeping previous data unchanged (no commit).")
             return
         log.warning("No previous data. Using sample data for initial run.")
         holdings = generate_sample()
+        disclosure_date = today
 
-    # Attach per-holding change delta vs previous day
+    date_str = disclosure_date or today
+
+    # 若揭露日期與前次相同且持股一致，則不更新（避免無意義的每日 commit）
+    if previous and previous.get("date") == date_str:
+        curr_weights = {h["code"]: h["weight"] for h in holdings}
+        prev_weights = {h["code"]: h["weight"] for h in previous.get("holdings", [])}
+        if curr_weights == prev_weights:
+            log.info("Holdings unchanged (date=%s) — skipping update.", date_str)
+            return
+
+    # Attach per-holding change delta vs previous disclosure
     if previous and "holdings" in previous:
         prev_map = {h["code"]: h for h in previous["holdings"]}
         for h in holdings:
@@ -644,7 +708,7 @@ def main() -> None:
     changes = detect_changes(holdings, previous)
 
     save_data({
-        "date":       today,
+        "date":       date_str,
         "fetched_at": datetime.now().isoformat(),
         "holdings":   sorted(holdings, key=lambda x: x["weight"], reverse=True),
         "metrics":    metrics,

@@ -63,16 +63,9 @@ jobs:
           python - << 'PYEOF'
           import json, os, urllib.request, sys
           from pathlib import Path
-          from datetime import date
 
           # ── 00981A 持股異動 ──────────────────────────────────────────────
           data      = json.load(open("data/holdings.json", encoding="utf-8"))
-
-          # 如果資料不是今天的（scraper fallback 使用舊資料），跳過通知
-          today_str = date.today().isoformat()
-          if data.get("date") != today_str:
-              print(f"Data date {data.get('date')} != today {today_str} — skipping notification")
-              sys.exit(0)
           ch        = data.get("changes", {})
           added     = ch.get("added",     [])
           removed   = ch.get("removed",   [])
