@@ -3,7 +3,8 @@
 00981A ETF Holdings Scraper
 
 Data source:
-  MoneyDJ — www.moneydj.com (月底揭露，主動型ETF)
+  MoneyDJ — www.moneydj.com (每日揭露 top-10 持股，主動型ETF)
+  Uses stable3 / sdate3 for the daily holdings details table.
 
 Usage:
   python scraper.py
@@ -580,9 +581,9 @@ def save_overlap(overlap: dict, changes: dict) -> None:
 
 def fetch_moneydj() -> tuple[Optional[list[dict]], Optional[str]]:
     """
-    Scrape MoneyDJ holdings page for 00981A.
+    Scrape MoneyDJ holdings page for 00981A (stable3 table, sdate3 date).
     Returns (holdings, disclosure_date "YYYY-MM-DD") or (None, None).
-    Holdings data is updated monthly (end-of-month disclosure).
+    Top-10 holdings update daily per active-ETF disclosure rules.
     """
     session = make_session()
     url = "https://www.moneydj.com/ETF/X/Basic/Basic0007.xdjhtm?etfid=00981a.tw"
@@ -594,11 +595,11 @@ def fetch_moneydj() -> tuple[Optional[list[dict]], Optional[str]]:
     try:
         soup = BeautifulSoup(resp.text, "lxml")
 
-        # Holdings disclosure date is in sdate2 div (e.g. "資料日期：2026/03/31")
+        # sdate3 = holdings details date (changes daily); sdate2 = industry distribution (monthly)
         disclosure_date: Optional[str] = None
-        sdate2 = soup.find(id="ctl00_ctl00_MainContent_MainContent_sdate2")
-        if sdate2:
-            m = re.search(r"(\d{4}/\d{2}/\d{2})", sdate2.get_text())
+        sdate3 = soup.find(id="ctl00_ctl00_MainContent_MainContent_sdate3")
+        if sdate3:
+            m = re.search(r"(\d{4}/\d{2}/\d{2})", sdate3.get_text())
             if m:
                 disclosure_date = m.group(1).replace("/", "-")
 
