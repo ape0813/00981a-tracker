@@ -1,0 +1,192 @@
+{
+  "date": "2026-10-27",
+  "fetched_at": "2026-10-27T15:56:26.942898",
+  "holdings": [
+    {
+      "code": "2330",
+      "name": "台積電",
+      "weight": 11.75,
+      "shares": 13046000,
+      "change": 0.41,
+      "sector": "半導體"
+    },
+    {
+      "code": "3037",
+      "name": "欣興",
+      "weight": 7.83,
+      "shares": 19689000,
+      "change": -0.18,
+      "sector": "其他"
+    },
+    {
+      "code": "2454",
+      "name": "聯發科",
+      "weight": 7.78,
+      "shares": 5233000,
+      "change": 0.04,
+      "sector": "半導體"
+    },
+    {
+      "code": "2383",
+      "name": "台光電",
+      "weight": 7.72,
+      "shares": 4328000,
+      "change": -0.51,
+      "sector": "其他"
+    },
+    {
+      "code": "3017",
+      "name": "奇鋐",
+      "weight": 7.68,
+      "shares": 6537000,
+      "change": 0.06,
+      "sector": "其他"
+    },
+    {
+      "code": "3653",
+      "name": "健策",
+      "weight": 5.52,
+      "shares": 2512000,
+      "change": -0.2,
+      "sector": "其他"
+    },
+    {
+      "code": "2327",
+      "name": "國巨*",
+      "weight": 4.6,
+      "shares": 23519000,
+      "change": 0.13,
+      "sector": "電子"
+    },
+    {
+      "code": "6223",
+      "name": "旺矽",
+      "weight": 4.5,
+      "shares": 2504000,
+      "change": -0.09,
+      "sector": "其他"
+    },
+    {
+      "code": "2308",
+      "name": "台達電",
+      "weight": 4.3,
+      "shares": 7582000,
+      "change": -0.14,
+      "sector": "半導體"
+    },
+    {
+      "code": "8046",
+      "name": "南電",
+      "weight": 4.21,
+      "shares": 8937000,
+      "change": -0.03,
+      "sector": "半導體"
+    }
+  ],
+  "metrics": {
+    "scale": "主動安聯台灣    ",
+    "nav": "837000",
+    "return_ytd": "N/A",
+    "return_1y": "N/A",
+    "holdings_count": 10,
+    "last_updated": "2026-10-27 15:56"
+  },
+  "changes": {
+    "added": [],
+    "removed": [],
+    "increased": [
+      {
+        "code": "2330",
+        "name": "台積電",
+        "weight": 11.75,
+        "shares": 13046000,
+        "change": 0.41,
+        "sector": "半導體",
+        "shares_change": 375000
+      },
+      {
+        "code": "2327",
+        "name": "國巨*",
+        "weight": 4.6,
+        "shares": 23519000,
+        "change": 0.13,
+        "sector": "電子",
+        "shares_change": 0
+      },
+      {
+        "code": "3017",
+        "name": "奇鋐",
+        "weight": 7.68,
+        "shares": 6537000,
+        "change": 0.06,
+        "sector": "其他",
+        "shares_change": 80000
+      },
+      {
+        "code": "2454",
+        "name": "聯發科",
+        "weight": 7.78,
+        "shares": 5233000,
+        "change": 0.04,
+        "sector": "半導體",
+        "shares_change": 90000
+      }
+    ],
+    "decreased": [
+      {
+        "code": "2383",
+        "name": "台光電",
+        "weight": 7.72,
+        "shares": 4328000,
+        "change": -0.51,
+        "sector": "其他",
+        "shares_change": 0
+      },
+      {
+        "code": "3653",
+        "name": "健策",
+        "weight": 5.52,
+        "shares": 2512000,
+        "change": -0.2,
+        "sector": "其他",
+        "shares_change": 0
+      },
+      {
+        "code": "3037",
+        "name": "欣興",
+        "weight": 7.83,
+        "shares": 19689000,
+        "change": -0.18,
+        "sector": "其他",
+        "shares_change": 0
+      },
+      {
+        "code": "2308",
+        "name": "台達電",
+        "weight": 4.3,
+        "shares": 7582000,
+        "change": -0.14,
+        "sector": "半導體",
+        "shares_change": 0
+      },
+      {
+        "code": "6223",
+        "name": "旺矽",
+        "weight": 4.5,
+        "shares": 2504000,
+        "change": -0.09,
+        "sector": "其他",
+        "shares_change": 0
+      },
+      {
+        "code": "8046",
+        "name": "南電",
+        "weight": 4.21,
+        "shares": 8937000,
+        "change": -0.03,
+        "sector": "半導體",
+        "shares_change": 0
+      }
+    ]
+  }
+}
